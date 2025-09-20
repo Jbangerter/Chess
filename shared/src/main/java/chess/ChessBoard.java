@@ -87,7 +87,7 @@ public class ChessBoard {
         }
     }
 
-    public String printBoard() {
+    public String boardAsString() {
         String board = "";
 
         for (int row = 0; row < squares.length; row++) {
@@ -116,6 +116,6 @@ public class ChessBoard {
 
     @Override
     public String toString() {
-        return printBoard();
+        return boardAsString();
     }
 }

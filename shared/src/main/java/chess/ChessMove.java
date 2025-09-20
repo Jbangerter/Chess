@@ -44,7 +44,7 @@ public class ChessMove {
     public ChessPiece.PieceType getPromotionPiece() {
         return promotionPiece;
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -61,6 +61,6 @@ public class ChessMove {
 
     @Override
     public String toString() {
-        return String.format("%s,%s", startPosition, endPosition);
+        return String.format("%s,%s,%s", startPosition, endPosition, promotionPiece);
     }
 }
