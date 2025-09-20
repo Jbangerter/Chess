@@ -55,7 +55,6 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         //section that outputs our moves.
-        //return List.of(new ChessMove(new ChessPosition(1, 5), new ChessPosition(1, 6), null));
 
         var pieceType = board.getPiece(myPosition).getPieceType();
 
@@ -63,10 +62,9 @@ public class ChessPiece {
             case KING:
                 return new kingLogic(board, myPosition).getLegalMoves();
             case QUEEN:
-                return List.of(new ChessMove(new ChessPosition(2, 5), new ChessPosition(1, 6), null));
+                return new queenLogic(board, myPosition).getLegalMoves();
             case BISHOP:
-                bishopLogic logic = new bishopLogic(board, myPosition);
-                return logic.getLegalMoves();
+                return new bishopLogic(board, myPosition).getLegalMoves();
             case KNIGHT:
                 return List.of(new ChessMove(new ChessPosition(4, 5), new ChessPosition(1, 6), null));
             case ROOK:
@@ -176,6 +174,35 @@ public class ChessPiece {
 
             canPromote = false;
             canIterate = false;
+
+            int[][] validMoves = {
+                    {0, 1},
+                    {0, -1},
+                    {1, 0},
+                    {-1, 0},
+                    {1, 1},
+                    {-1, 1},
+                    {-1, -1},
+                    {1, -1}
+            };
+
+            legalMoves = findLegalMoves(canPromote, canIterate, validMoves, myPosition, board, pieceColor);
+        }
+
+
+        public Collection<ChessMove> getLegalMoves() {
+            return legalMoves;
+        }
+
+    }
+
+    private class queenLogic extends chessLogic {
+
+        public queenLogic(ChessBoard board, ChessPosition myPosition) {
+            super(board, myPosition);
+
+            canPromote = false;
+            canIterate = true;
 
             int[][] validMoves = {
                     {0, 1},
