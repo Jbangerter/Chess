@@ -61,7 +61,7 @@ public class ChessPiece {
 
         switch (pieceType) {
             case KING:
-                return List.of(new ChessMove(new ChessPosition(1, 5), new ChessPosition(1, 6), null));
+                return new kingLogic(board, myPosition).getLegalMoves();
             case QUEEN:
                 return List.of(new ChessMove(new ChessPosition(2, 5), new ChessPosition(1, 6), null));
             case BISHOP:
@@ -116,19 +116,17 @@ public class ChessPiece {
                 ChessMove nextMove = new ChessMove(initialPosition, nextPosition, null);
                 ChessPiece nextSquare = board.getPiece(nextPosition);
 
-                System.out.println(nextPosition);
+                System.out.println(initialPosition);
 
 
                 if (nextSquare == null) {
-                    //System.out.println("a");
                     moves.add(nextMove);
-                    // System.out.println("a.1");
-                    exploreLegalMoves(canIterate, initialPosition, nextPosition, deltaRow, deltaCol, board, pieceColor, moves);
+                    if (canIterate) {
+                        exploreLegalMoves(canIterate, initialPosition, nextPosition, deltaRow, deltaCol, board, pieceColor, moves);
+                    }
                 } else if (nextSquare.getTeamColor() != pieceColor) {
-                    //System.out.println("b");
                     moves.add(nextMove);
                 } else {
-                    //System.out.println("c");
                     return;
                 }
             }
@@ -161,13 +159,6 @@ public class ChessPiece {
                     {1, -1}
             };
 
-//            System.out.println(Arrays.deepToString(validMoves));
-//            System.out.println("Can Promote: " + canPromote);
-//            System.out.println("Can Iterate: " + canIterate);
-//            System.out.println("Piece Type: " + piece.getPieceType());
-//            System.out.println("Piece Color: " + pieceColor);
-//            System.out.println("Piece Position: " + myPosition);
-
             legalMoves = findLegalMoves(canPromote, canIterate, validMoves, myPosition, board, pieceColor);
         }
 
@@ -178,24 +169,34 @@ public class ChessPiece {
 
     }
 
+    private class kingLogic extends chessLogic {
 
-//    private Collection<ChessMove> kingLogic(ChessBoard board, ChessPosition myPosition) {
-//        this.board = board;
-//        this.myPosition = myPosition;
-//
-//        var piece = board.getPiece(myPosition);
-//        var pieceColor = board.getPiece(myPosition).getTeamColor();
-//
-//        Collection<ChessMove> legalMoves = List.of();
-//        List<ChessMove> validMoves = new ArrayList<>();
-//        validMoves.add(ChessMove())
-//
-//
-//        System.out.println(myPosition);
-//
-//        return legalMoves;
-//    }
-//
+        public kingLogic(ChessBoard board, ChessPosition myPosition) {
+            super(board, myPosition);
+
+            canPromote = false;
+            canIterate = false;
+
+            int[][] validMoves = {
+                    {0, 1},
+                    {0, -1},
+                    {1, 0},
+                    {-1, 0},
+                    {1, 1},
+                    {-1, 1},
+                    {-1, -1},
+                    {1, -1}
+            };
+
+            legalMoves = findLegalMoves(canPromote, canIterate, validMoves, myPosition, board, pieceColor);
+        }
+
+
+        public Collection<ChessMove> getLegalMoves() {
+            return legalMoves;
+        }
+
+    }
 
 
     @Override
