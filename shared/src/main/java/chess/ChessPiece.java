@@ -66,7 +66,7 @@ public class ChessPiece {
             case BISHOP:
                 return new bishopLogic(board, myPosition).getLegalMoves();
             case KNIGHT:
-                return List.of(new ChessMove(new ChessPosition(4, 5), new ChessPosition(1, 6), null));
+                return new knightLogic(board, myPosition).getLegalMoves();
             case ROOK:
                 return new rookLogic(board, myPosition).getLegalMoves();
             case PAWN:
@@ -213,6 +213,35 @@ public class ChessPiece {
                     {-1, 1},
                     {-1, -1},
                     {1, -1}
+            };
+
+            legalMoves = findLegalMoves(canPromote, canIterate, validMoves, myPosition, board, pieceColor);
+        }
+
+
+        public Collection<ChessMove> getLegalMoves() {
+            return legalMoves;
+        }
+
+    }
+
+    private class knightLogic extends chessLogic {
+
+        public knightLogic(ChessBoard board, ChessPosition myPosition) {
+            super(board, myPosition);
+
+            canPromote = false;
+            canIterate = false;
+
+            int[][] validMoves = {
+                    {2, 1},
+                    {2, -1},
+                    {-2, 1},
+                    {-2, -1},
+                    {1, 2},
+                    {1, -2},
+                    {-1, 2},
+                    {-1, -2},
             };
 
             legalMoves = findLegalMoves(canPromote, canIterate, validMoves, myPosition, board, pieceColor);
