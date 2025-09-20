@@ -68,7 +68,7 @@ public class ChessPiece {
             case KNIGHT:
                 return List.of(new ChessMove(new ChessPosition(4, 5), new ChessPosition(1, 6), null));
             case ROOK:
-                return List.of(new ChessMove(new ChessPosition(5, 5), new ChessPosition(1, 6), null));
+                return new rookLogic(board, myPosition).getLegalMoves();
             case PAWN:
                 return List.of(new ChessMove(new ChessPosition(6, 5), new ChessPosition(1, 6), null));
             default:
@@ -225,6 +225,30 @@ public class ChessPiece {
 
     }
 
+    private class rookLogic extends chessLogic {
+
+        public rookLogic(ChessBoard board, ChessPosition myPosition) {
+            super(board, myPosition);
+
+            canPromote = false;
+            canIterate = true;
+
+            int[][] validMoves = {
+                    {0, 1},
+                    {0, -1},
+                    {1, 0},
+                    {-1, 0},
+            };
+
+            legalMoves = findLegalMoves(canPromote, canIterate, validMoves, myPosition, board, pieceColor);
+        }
+
+
+        public Collection<ChessMove> getLegalMoves() {
+            return legalMoves;
+        }
+
+    }
 
     @Override
     public boolean equals(Object o) {
