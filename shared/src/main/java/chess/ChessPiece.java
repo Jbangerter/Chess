@@ -70,7 +70,7 @@ public class ChessPiece {
             case ROOK:
                 return new rookLogic(board, myPosition).getLegalMoves();
             case PAWN:
-                return List.of(new ChessMove(new ChessPosition(6, 5), new ChessPosition(1, 6), null));
+                return new pawnLogic(board, myPosition).getLegalMoves();
             default:
                 throw new IllegalArgumentException("Invalid piece type");
         }
@@ -114,7 +114,7 @@ public class ChessPiece {
                 ChessMove nextMove = new ChessMove(initialPosition, nextPosition, null);
                 ChessPiece nextSquare = board.getPiece(nextPosition);
 
-                System.out.println(initialPosition);
+                // System.out.println(initialPosition);
 
 
                 if (nextSquare == null) {
@@ -275,6 +275,85 @@ public class ChessPiece {
 
         public Collection<ChessMove> getLegalMoves() {
             return legalMoves;
+        }
+
+    }
+
+    private class pawnLogic extends chessLogic {
+
+        public pawnLogic(ChessBoard board, ChessPosition myPosition) {
+            super(board, myPosition);
+
+            canPromote = true;
+            canIterate = false;
+
+            int[][] validMoves;
+
+            if (pieceColor == ChessGame.TeamColor.BLACK) {
+                validMoves = new int[][]{{-1, 0}};
+            } else if (pieceColor == ChessGame.TeamColor.WHITE) {
+                validMoves = new int[][]{{1, 0}};
+            } else {
+                throw new RuntimeException("Pawn Color is invalid");
+            }
+
+            legalMoves = findLegalMoves(canPromote, canIterate, validMoves, myPosition, board, pieceColor);
+        }
+
+
+        @Override
+        protected Collection<ChessMove> findLegalMoves(boolean canPromote, boolean canIterate, int[][] validMoves, ChessPosition piecePosition, ChessBoard board, ChessGame.TeamColor pieceColor) {
+            Collection<ChessMove> moves = new ArrayList<>();
+
+
+            if (piecePosition.getRow() == 2 || piecePosition.getRow() == 7) {
+                if (board.getPiece(new ChessPosition(piecePosition.getRow() + validMoves[0][0], piecePosition.getColumn())) == null) {
+                    tryMove(piecePosition, validMoves[0][0] * 2, 0, pieceColor, moves);
+                }
+            }
+
+            tryMove(piecePosition, validMoves[0][0], 0, pieceColor, moves);
+            tryMove(piecePosition, validMoves[0][0], 1, pieceColor, moves);
+            tryMove(piecePosition, validMoves[0][0], -1, pieceColor, moves);
+
+            return moves;
+        }
+
+        public Collection<ChessMove> getLegalMoves() {
+            return legalMoves;
+        }
+
+        private void tryMove(ChessPosition startPosition, int deltaRow, int deltaCol, ChessGame.TeamColor pieceColor, Collection<ChessMove> moves) {
+
+
+            if (((startPosition.getRow() + deltaRow) > 8) || ((startPosition.getRow() + deltaRow) < 1)) {
+                return;
+            } else if (((startPosition.getColumn() + deltaCol) > 8) || ((startPosition.getColumn() + deltaCol) < 1)) {
+                return;
+            }
+
+            ChessPosition nextPosition = new ChessPosition((startPosition.getRow() + deltaRow), (startPosition.getColumn() + deltaCol));
+            ChessPiece nextSquare = board.getPiece(nextPosition);
+
+            if (nextSquare == null) {
+                addMove(startPosition, nextPosition, moves);
+            } else if (nextSquare.getTeamColor() != pieceColor) {
+                addMove(startPosition, nextPosition, moves);
+            } else {
+                return;
+            }
+        }
+
+        private void addMove(ChessPosition oldPosition, ChessPosition newPosition, Collection<ChessMove> moves) {
+            if (newPosition.getRow() == 1 || newPosition.getRow() == 8) {
+                for (ChessPiece.PieceType promotionPiece : ChessPiece.PieceType.values()) {
+                    if (promotionPiece != PieceType.PAWN) {
+                        moves.add(new ChessMove(oldPosition, newPosition, promotionPiece));
+                    }
+                }
+            } else {
+                moves.add(new ChessMove(oldPosition, newPosition, null));
+            }
         }
 
     }
