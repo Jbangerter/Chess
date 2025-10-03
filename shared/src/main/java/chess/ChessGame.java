@@ -1,6 +1,11 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Objects;
+
+import static chess.ChessPiece.PieceType.*;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -10,6 +15,9 @@ import java.util.Collection;
  */
 public class ChessGame {
 
+    TeamColor teamTurn = TeamColor.WHITE;
+    ChessBoard gameBoard;
+
     public ChessGame() {
 
     }
@@ -18,7 +26,7 @@ public class ChessGame {
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return teamTurn;
     }
 
     /**
@@ -27,7 +35,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        teamTurn = team;
     }
 
     /**
@@ -46,7 +54,9 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        Collection<ChessMove> posibleMoves = gameBoard.getPiece(startPosition).pieceMoves(gameBoard, startPosition);
+
+        return posibleMoves;
     }
 
     /**
@@ -66,7 +76,50 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        Collection<ChessMove> allMoves = new ArrayList<>();
+        ChessPosition kingPosition = getKingPosition(teamColor);
+        System.out.println(kingPosition);
+
+        for (int row = 1; row <= 8; row++) {
+            for (int column = 1; column <= 8; column++) {
+                var workingPiece = gameBoard.getPiece(new ChessPosition(row, column));
+                if (workingPiece != null) {
+                    if (workingPiece.getTeamColor() != teamColor) {
+                        for (ChessMove move : workingPiece.pieceMoves(gameBoard, new ChessPosition(row, column))) {
+//                            System.out.print(workingPiece.getPieceType());
+//                            System.out.println(move);
+
+                            System.out.print(move.getEndPosition());
+                            System.out.print(kingPosition);
+// This is super Hacky need to fix Equals on position
+                            if ((move.getEndPosition().getRow() == kingPosition.getRow()) && (move.getEndPosition().getColumn() == kingPosition.getColumn())) {
+                                System.out.print("hi");
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        return false;
+    }
+
+
+    private ChessPosition getKingPosition(TeamColor colorOfKing) {
+        for (int row = 1; row <= 8; row++) {
+            for (int column = 1; column <= 8; column++) {
+                if (gameBoard.getPiece(new ChessPosition(row, column)) != null) {
+                    if (gameBoard.getPiece(new ChessPosition(row, column)).getPieceType() == KING) {
+                        if (gameBoard.getPiece(new ChessPosition(row, column)).getTeamColor() == colorOfKing) {
+                            return new ChessPosition(row, column);
+                        }
+                    }
+                }
+            }
+        }
+        throw new RuntimeException("No King Found, board is in invalid board state");
     }
 
     /**
@@ -96,7 +149,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        gameBoard = board;
     }
 
     /**
@@ -105,6 +158,21 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        throw new RuntimeException("Not implemented 29");
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessGame chessGame = (ChessGame) o;
+        return teamTurn == chessGame.teamTurn;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(teamTurn);
     }
 }
