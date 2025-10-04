@@ -11,7 +11,7 @@ import java.util.*;
 public class ChessPiece {
 
     private final ChessGame.TeamColor pieceColor;
-    private final PieceType type;
+    private PieceType type;
     private ChessBoard board;
     private ChessPosition myPosition;
 
@@ -44,6 +44,10 @@ public class ChessPiece {
      */
     public PieceType getPieceType() {
         return type;
+    }
+
+    public void promote(PieceType promotion) {
+        type = promotion;
     }
 
     /**
