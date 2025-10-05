@@ -406,7 +406,11 @@ public class ChessPiece {
     @Override
     public String toString() {
         //If you need intialized pieces
-        //return String.format("[%s%s]", pieceColor.toString().charAt(0), type.toString().charAt(0));
-        return String.format("[%s %s]", pieceColor, type);
+        return String.format("[%s%s]", pieceColor.toString().charAt(0), type.toString().charAt(0));
+        //return String.format("[%s %s]", pieceColor, type);
+    }
+
+    public ChessPiece deepCopy() {
+        return new ChessPiece(this.pieceColor, this.type);
     }
 }

@@ -122,4 +122,20 @@ public class ChessBoard {
     public String toString() {
         return boardAsString();
     }
+
+    public ChessBoard deepCopy() {
+        ChessBoard newBoard = new ChessBoard();
+
+        for (int row = 0; row < squares.length; row++) {
+            for (int col = 0; col < squares[row].length; col++) {
+                ChessPiece piece = this.squares[row][col];
+                if (piece != null) {
+                    newBoard.squares[row][col] = piece.deepCopy();
+                } else {
+                    newBoard.squares[row][col] = null;
+                }
+            }
+        }
+        return newBoard;
+    }
 }

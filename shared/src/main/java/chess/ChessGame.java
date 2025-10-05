@@ -104,22 +104,16 @@ public class ChessGame {
         Collection<ChessMove> allMoves = new ArrayList<>();
         ChessPosition kingPosition = getKingPosition(board, teamColor);
 
-        for (int row = 1; row <= 8; row++) {
-            for (int column = 1; column <= 8; column++) {
-                var workingPiece = board.getPiece(new ChessPosition(row, column));
-                if (workingPiece != null) {
-                    if (workingPiece.getTeamColor() != teamColor) {
-                        for (ChessMove move : workingPiece.pieceMoves(board, new ChessPosition(row, column))) {
-                            if (move.getEndPosition().equals(kingPosition)) {
-                                System.out.println(workingPiece);
-                                return true;
-                            }
-                        }
-                    }
+        ArrayList<ChessPosition> attackingPieces = getPieces(board, getOpposingTeam(teamColor));
+        for (ChessPosition workingPosition : attackingPieces) {
+            var workingPiece = board.getPiece(workingPosition);
+            for (ChessMove move : workingPiece.pieceMoves(board, workingPosition)) {
+                if (move.getEndPosition().equals(kingPosition)) {
+                    //System.out.println(workingPiece);
+                    return true;
                 }
             }
         }
-
 
         return false;
     }
@@ -142,9 +136,8 @@ public class ChessGame {
             possibleMoves.addAll(gameBoard.getPiece(piece).pieceMoves(gameBoard, piece));
         }
 
-
         for (ChessMove move : possibleMoves) {
-            ChessBoard simulatedBoard = gameBoard;
+            ChessBoard simulatedBoard = gameBoard.deepCopy();
             simulateMove(simulatedBoard, move);
 
             if (!isInCheck(simulatedBoard, teamColor)) {
@@ -157,6 +150,8 @@ public class ChessGame {
 
 
     private ChessPosition getKingPosition(ChessBoard board, TeamColor colorOfKing) {
+
+
         for (int row = 1; row <= 8; row++) {
             for (int column = 1; column <= 8; column++) {
                 if (board.getPiece(new ChessPosition(row, column)) != null) {

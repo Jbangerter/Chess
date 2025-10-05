@@ -67,4 +67,8 @@ public class ChessPosition {
     public String toString() {
         return String.format("[%d,%d]", row, col);
     }
+
+    public ChessPosition deepCopy() {
+        return new ChessPosition(this.row, this.col);
+    }
 }

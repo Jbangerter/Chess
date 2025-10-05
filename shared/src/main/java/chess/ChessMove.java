@@ -63,4 +63,8 @@ public class ChessMove {
     public String toString() {
         return String.format("%s,%s,%s", startPosition, endPosition, promotionPiece);
     }
+
+    public ChessMove deepCopy() {
+        return new ChessMove(this.startPosition, this.endPosition, this.promotionPiece);
+    }
 }
