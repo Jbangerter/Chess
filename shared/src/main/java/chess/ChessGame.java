@@ -135,11 +135,15 @@ public class ChessGame {
 
 
         var kingLocation = getKingPosition(gameBoard, teamColor);
-        Collection<ChessMove> possibleKingMoves = new ChessPiece(teamColor, KING).pieceMoves(gameBoard, kingLocation);
-        possibleKingMoves.add(new ChessMove(kingLocation, kingLocation, null));
+        Collection<ChessMove> possibleMoves = new ArrayList<>();
+        ArrayList<ChessPosition> friendlyPieces = getPieces(gameBoard, teamColor);
+
+        for (ChessPosition piece : friendlyPieces) {
+            possibleMoves.addAll(gameBoard.getPiece(piece).pieceMoves(gameBoard, piece));
+        }
 
 
-        for (ChessMove move : possibleKingMoves) {
+        for (ChessMove move : possibleMoves) {
             ChessBoard simulatedBoard = gameBoard;
             simulateMove(simulatedBoard, move);
 
@@ -193,6 +197,23 @@ public class ChessGame {
         }
         return false;
     }
+
+    private ArrayList<ChessPosition> getPieces(ChessBoard board, TeamColor teamColor) {
+        ArrayList<ChessPosition> pieces = new ArrayList<>();
+        for (int row = 1; row <= 8; row++) {
+            for (int column = 1; column <= 8; column++) {
+                ChessPiece piece = board.getPiece(new ChessPosition(row, column));
+                if (piece != null) {
+                    if (piece.getTeamColor() == teamColor) {
+                        pieces.add(new ChessPosition(row, column));
+                    }
+                }
+            }
+        }
+
+        return pieces;
+    }
+
 
     private TeamColor getOpposingTeam(TeamColor team) {
         if (team == TeamColor.BLACK) {
