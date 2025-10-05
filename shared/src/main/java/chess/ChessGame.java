@@ -15,11 +15,14 @@ import static chess.ChessPiece.PieceType.*;
  */
 public class ChessGame {
 
-    TeamColor teamTurn = TeamColor.WHITE;
+    TeamColor teamTurn;
     ChessBoard gameBoard;
 
-    public ChessGame() {
 
+    public ChessGame() {
+        teamTurn = TeamColor.WHITE;
+        gameBoard = new ChessBoard();
+        gameBoard.resetBoard();
     }
 
     /**
@@ -234,7 +237,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        throw new RuntimeException("Not implemented 1");
     }
 
     /**
@@ -252,7 +255,7 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented 29");
+        return gameBoard;
     }
 
 
