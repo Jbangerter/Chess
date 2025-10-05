@@ -1,8 +1,8 @@
 package chess;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Objects;
 
 import static chess.ChessPiece.PieceType.*;
@@ -93,19 +93,25 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
+        return checkForCheck(gameBoard, teamColor);
+    }
+
+    private boolean isInCheck(ChessBoard board, TeamColor teamColor) {
+        return checkForCheck(board, teamColor);
+    }
+
+    private boolean checkForCheck(ChessBoard board, TeamColor teamColor) {
         Collection<ChessMove> allMoves = new ArrayList<>();
-        ChessPosition kingPosition = getKingPosition(gameBoard, teamColor);
-        System.out.println(kingPosition);
+        ChessPosition kingPosition = getKingPosition(board, teamColor);
 
         for (int row = 1; row <= 8; row++) {
             for (int column = 1; column <= 8; column++) {
-                var workingPiece = gameBoard.getPiece(new ChessPosition(row, column));
+                var workingPiece = board.getPiece(new ChessPosition(row, column));
                 if (workingPiece != null) {
                     if (workingPiece.getTeamColor() != teamColor) {
-                        for (ChessMove move : workingPiece.pieceMoves(gameBoard, new ChessPosition(row, column))) {
-                            // This is super Hacky need to fix Equals on position
-                            if ((move.getEndPosition().getRow() == kingPosition.getRow()) && (move.getEndPosition().getColumn() == kingPosition.getColumn())) {
-                                System.out.print("hi");
+                        for (ChessMove move : workingPiece.pieceMoves(board, new ChessPosition(row, column))) {
+                            if (move.getEndPosition().equals(kingPosition)) {
+                                System.out.println(workingPiece);
                                 return true;
                             }
                         }
@@ -126,11 +132,23 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-         var kingLocation = getKingPosition(gameBoard, teamColor);
-         Collection<ChessMove> possibleKingMoves = new ChessPiece(teamColor, KING).pieceMoves(gameBoard, kingLocation);
-         for(ChessMove move : possibleKingMoves){
-             if(! positionIsAttacked(gameBoard, move.getEndPosition(), ))
-         }
+
+
+        var kingLocation = getKingPosition(gameBoard, teamColor);
+        Collection<ChessMove> possibleKingMoves = new ChessPiece(teamColor, KING).pieceMoves(gameBoard, kingLocation);
+        possibleKingMoves.add(new ChessMove(kingLocation, kingLocation, null));
+
+
+        for (ChessMove move : possibleKingMoves) {
+            ChessBoard simulatedBoard = gameBoard;
+            simulateMove(simulatedBoard, move);
+
+            if (!isInCheck(simulatedBoard, teamColor)) {
+                return false;
+            }
+
+        }
+        return true;
     }
 
 
@@ -153,18 +171,43 @@ public class ChessGame {
         for (int row = 1; row <= 8; row++) {
             for (int column = 1; column <= 8; column++) {
                 ChessPiece attackingPiece = board.getPiece(new ChessPosition(row, column));
-                if (attackingPiece != null){
-                    if(attackingPiece.getTeamColor() == attackers) {
-                        for (ChessMove move : attackingPiece.pieceMoves(board, new ChessPosition(row, column))) {
-                            if(move.getEndPosition() == target){
+                if (attackingPiece != null) {
+                    System.out.println(attackingPiece.getPieceType() + " " + row + "," + column);
+
+                    if (attackingPiece.getTeamColor() == attackers) {
+                        ArrayList<ChessMove> attacks = new ArrayList<>(attackingPiece.pieceMoves(board, new ChessPosition(row, column)));
+                        if (attackingPiece.getPieceType() == PAWN) {
+                            ChessMove pawnReference = attacks.getLast();
+                            //attacks.add(new ChessMove(pawnReference.getStartPosition(), new ChessPosition(pawnReference.row, pawnReference.col +1)))
+                        }
+                        for (ChessMove move : attacks) {
+                            if (move.getEndPosition().equals(target)) {
+                                //System.out.println(move);
                                 return true;
                             }
                         }
+
                     }
                 }
             }
         }
         return false;
+    }
+
+    private TeamColor getOpposingTeam(TeamColor team) {
+        if (team == TeamColor.BLACK) {
+            return TeamColor.WHITE;
+        } else {
+            return TeamColor.BLACK;
+        }
+    }
+
+
+    private void simulateMove(ChessBoard board, ChessMove move) {
+        var simulatedPiece = board.getPiece(move.getStartPosition());
+
+        board.removePiece(move.getStartPosition());
+        board.addPiece(move.getEndPosition(), simulatedPiece);
     }
 
     /**
