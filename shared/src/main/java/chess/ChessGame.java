@@ -59,8 +59,9 @@ public class ChessGame {
         Collection<ChessMove> possibleMoves = board.getPiece(startPosition).pieceMoves(board, startPosition);
         Collection<ChessMove> legalMoves = new ArrayList<>();
         ChessPiece targetPiece = board.getPiece(startPosition);
+        TeamColor team = targetPiece.getTeamColor();
 
-        if (isInStalemate(teamTurn)) {
+        if (isInStalemate(team)) {
             return new ArrayList<>();
         }
 
@@ -68,13 +69,15 @@ public class ChessGame {
             ChessBoard simulatedBoard = board.deepCopy();
             movePiece(simulatedBoard, move);
 
-            if (!isInCheck(simulatedBoard, teamTurn)) {
-                if (!isInCheckmate(simulatedBoard, teamTurn)) {
+            if (!isInCheck(simulatedBoard, team)) {
+                if (!isInCheckmate(simulatedBoard, team)) {
                     legalMoves.add(move);
                 }
             }
         }
 
+
+        System.out.println(legalMoves);
         return legalMoves;
     }
 
@@ -94,7 +97,7 @@ public class ChessGame {
         if (!legalMoves.contains(move)) {
             throw new InvalidMoveException(move + " Is not a legal move.");
         }
-        
+
         if (movingPiece.getTeamColor() != teamTurn) {
             throw new InvalidMoveException(move + " Targets a " + movingPiece.getTeamColor() + " piece.");
         }
