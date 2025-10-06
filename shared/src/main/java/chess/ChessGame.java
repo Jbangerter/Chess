@@ -17,7 +17,6 @@ public class ChessGame {
     TeamColor teamTurn;
     ChessBoard board;
 
-
     public ChessGame() {
         teamTurn = TeamColor.WHITE;
         board = new ChessBoard();
@@ -122,7 +121,6 @@ public class ChessGame {
     }
 
     private boolean checkForCheck(ChessBoard board, TeamColor teamColor) {
-        Collection<ChessMove> allMoves = new ArrayList<>();
         ChessPosition kingPosition = getKingPosition(board, teamColor);
 
         ArrayList<ChessPosition> attackingPieces = getPieces(board, getOpposingTeam(teamColor));
@@ -155,7 +153,6 @@ public class ChessGame {
     }
 
     private boolean checkmateChecker(ChessBoard board, TeamColor teamColor) {
-        var kingLocation = getKingPosition(board, teamColor);
         Collection<ChessMove> possibleMoves = new ArrayList<>();
         ArrayList<ChessPosition> friendlyPieces = getPieces(board, teamColor);
 
@@ -170,7 +167,6 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        ChessPosition kingPosition = getKingPosition(board, teamColor);
         Collection<ChessMove> possibleMoves = new ArrayList<>();
         ArrayList<ChessPosition> friendlyPieces = getPieces(board, teamColor);
 
@@ -214,31 +210,6 @@ public class ChessGame {
         throw new RuntimeException("No King Found, board is in invalid board state");
     }
 
-    private boolean positionIsAttacked(ChessBoard board, ChessPosition target, TeamColor attackers) {
-        for (int row = 1; row <= 8; row++) {
-            for (int column = 1; column <= 8; column++) {
-                ChessPiece attackingPiece = board.getPiece(new ChessPosition(row, column));
-                if (attackingPiece != null) {
-                    System.out.println(attackingPiece.getPieceType() + " " + row + "," + column);
-
-                    if (attackingPiece.getTeamColor() == attackers) {
-                        ArrayList<ChessMove> attacks = new ArrayList<>(attackingPiece.pieceMoves(board, new ChessPosition(row, column)));
-                        if (attackingPiece.getPieceType() == PAWN) {
-                            ChessMove pawnReference = attacks.getLast();
-                            //attacks.add(new ChessMove(pawnReference.getStartPosition(), new ChessPosition(pawnReference.row, pawnReference.col +1)))
-                        }
-                        for (ChessMove move : attacks) {
-                            if (move.getEndPosition().equals(target)) {
-                                //System.out.println(move);
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
 
     private ArrayList<ChessPosition> getPieces(ChessBoard board, TeamColor teamColor) {
         ArrayList<ChessPosition> pieces = new ArrayList<>();
@@ -302,11 +273,11 @@ public class ChessGame {
             return false;
         }
         ChessGame chessGame = (ChessGame) o;
-        return teamTurn == chessGame.teamTurn;
+        return teamTurn == chessGame.teamTurn && Objects.equals(board, chessGame.board);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(teamTurn);
+        return Objects.hash(teamTurn, board);
     }
 }
