@@ -8,10 +8,9 @@ public class UserService {
         return new AuthData(user.username(), generateAuthToken());
     }
 
-    private String generateAuthToken(){
+    private String generateAuthToken() {
         return "xyz";
     }
 
 }
 
-s
