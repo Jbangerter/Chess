@@ -1,6 +1,10 @@
 package service;
 
+
 import model.*;
+
+import java.util.UUID;
+
 
 public class UserService {
     public AuthData register(UserData user) {
@@ -8,7 +12,7 @@ public class UserService {
     }
 
     private String generateAuthToken() {
-        return "xyz";
+        return UUID.randomUUID().toString();
     }
 
 }
