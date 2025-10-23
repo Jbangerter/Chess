@@ -1,9 +1,9 @@
 package server;
 
 import com.google.gson.Gson;
-import datamodel.*;
 import io.javalin.*;
-import service.UserService;
+import service.*;
+import model.*;
 
 public class Server {
 

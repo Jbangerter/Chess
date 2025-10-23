@@ -1,6 +1,6 @@
 package dataaccess;
 
-import datamodel.UserData;
+import model.UserData;
 
 public class MemoryDataAccess implements DataAccess {
 

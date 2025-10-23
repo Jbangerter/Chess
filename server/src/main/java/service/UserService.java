@@ -1,7 +1,6 @@
 package service;
 
-import datamodel.*;
-
+import model.*;
 
 public class UserService {
     public AuthData register(UserData user) {
