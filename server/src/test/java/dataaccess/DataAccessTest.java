@@ -1,26 +1,5 @@
 package dataaccess;
 
-//package dataaccess;
-//
-//import org.junit.jupiter.api.Test;
-//
-//import static org.junit.jupiter.api.Assertions.*;
-//
-//class DataAccessTest {
-//
-//    @Test
-//    void clear() {
-//    }
-//
-//    @Test
-//    void createUser() {
-//    }
-//
-//    @Test
-//    void getUser() {
-//    }
-//}
-
 import model.UserData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -82,4 +61,6 @@ public class DataAccessTest {
         boolean exists = dataAccess.userExists("nonExistentUser");
         Assertions.assertFalse(exists);
     }
+
+
 }

@@ -31,13 +31,28 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
+    public boolean userExists(String userID) {
+        return userDB.containsKey(userID);
+    }
+
+    @Override
     public UserData getUser(String userID) {
         return userDB.get(userID);
     }
 
     @Override
-    public boolean userExists(String userID) {
-        return userDB.containsKey(userID);
+    public void login(AuthData authData) {
+        authDB.put(authData.username(), authData);
+    }
+
+    @Override
+    public boolean userHasAuthdata(String UserID) {
+        return authDB.containsKey(UserID);
+    }
+
+    @Override
+    public AuthData getAuthdata(String UserID) {
+        return authDB.get(UserID);
     }
 
 

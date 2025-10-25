@@ -1,5 +1,6 @@
 package server;
 
+import Exceptions.*;
 import com.google.gson.Gson;
 
 import dataaccess.MemoryDataAccess;
@@ -16,10 +17,12 @@ import model.*;
 public class Server {
 
     private final Javalin javalin;
+
+    private MemoryDataAccess dataAccess;
     private UserService userService;
 
     public Server() {
-        var dataAccess = new MemoryDataAccess();
+        dataAccess = new MemoryDataAccess();
         userService = new UserService(dataAccess);
 
         //javalin = Javalin.create(config -> config.staticFiles.add("web"));
@@ -30,6 +33,14 @@ public class Server {
             config.jsonMapper(new JavalinGson()); // Use Javalin's Gson plugin
         });
 
+        javalin.exception(AlreadyTakenException.class, (e, ctx) -> {
+            ctx.status(403).json(new ErrorResponse(e.getMessage())); // Forbidden status
+        });
+
+        javalin.exception(BadRequestException.class, (e, ctx) -> {
+            ctx.status(400).json(new ErrorResponse(e.getMessage())); // Bad Request status
+        });
+
 
         // Register your endpoints and exception handlers here.
         javalin.post("/user", this::register);
@@ -37,7 +48,7 @@ public class Server {
     }
 
     private void deleteAll(@NotNull Context ctx) {
-
+        dataAccess.clear();
     }
 
     private void register(@NotNull Context ctx) {

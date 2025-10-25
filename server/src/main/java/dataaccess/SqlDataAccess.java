@@ -1,5 +1,6 @@
 package dataaccess;
 
+import model.AuthData;
 import model.UserData;
 
 public class SqlDataAccess implements DataAccess {
@@ -26,5 +27,20 @@ public class SqlDataAccess implements DataAccess {
     @Override
     public boolean userExists(String userID) {
         return false;
+    }
+
+    @Override
+    public void login(AuthData authData) {
+        
+    }
+
+    @Override
+    public boolean userHasAuthdata(String UserID) {
+        return false;
+    }
+
+    @Override
+    public AuthData getAuthdata(String UserID) {
+        return null;
     }
 }
