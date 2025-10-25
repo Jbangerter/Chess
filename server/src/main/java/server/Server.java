@@ -7,6 +7,7 @@ import io.javalin.*;
 
 import java.util.*;
 
+import io.javalin.json.JavalinGson;
 import io.javalin.http.Context;
 import org.jetbrains.annotations.NotNull;
 import service.*;
@@ -19,26 +20,33 @@ public class Server {
 
     public Server() {
         var dataAccess = new MemoryDataAccess();
-        UserService userService = new UserService(dataAccess);
+        userService = new UserService(dataAccess);
 
-        javalin = Javalin.create(config -> config.staticFiles.add("web"));
+        //javalin = Javalin.create(config -> config.staticFiles.add("web"));
+
+
+        javalin = Javalin.create(config -> {
+            config.staticFiles.add("web");
+            config.jsonMapper(new JavalinGson()); // Use Javalin's Gson plugin
+        });
+
 
         // Register your endpoints and exception handlers here.
-        javalin.post("/user", Server::register);
-        javalin.delete("/db", Server::deleteAll);
+        javalin.post("/user", this::register);
+        javalin.delete("/db", this::deleteAll);
     }
 
-    private static void deleteAll(@NotNull Context ctx) {
+    private void deleteAll(@NotNull Context ctx) {
 
     }
 
-    private static void register(@NotNull Context ctx) {
+    private void register(@NotNull Context ctx) {
 
         var serializer = new Gson();
         String reqJson = ctx.body();
         var req = serializer.fromJson(reqJson, UserData.class);
 
-        var response = Server.userService.register(req);
+        var response = this.userService.register(req);
         ctx.status(200).json(response);
     }
 
