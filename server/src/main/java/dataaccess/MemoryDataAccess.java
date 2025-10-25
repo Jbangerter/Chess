@@ -5,6 +5,7 @@ import model.GameData;
 import model.UserData;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 public class MemoryDataAccess implements DataAccess {
 
@@ -36,12 +37,17 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
+    public boolean validPasword(UserData user) {
+        return Objects.equals(user.password(), userDB.get(user.username()).password());
+    }
+
+    @Override
     public UserData getUser(String userID) {
         return userDB.get(userID);
     }
 
     @Override
-    public void login(AuthData authData) {
+    public void addAuth(AuthData authData) {
         authDB.put(authData.username(), authData);
     }
 

@@ -30,8 +30,13 @@ public class SqlDataAccess implements DataAccess {
     }
 
     @Override
-    public void login(AuthData authData) {
-        
+    public boolean validPasword(UserData user) {
+        return false;
+    }
+
+    @Override
+    public void addAuth(AuthData authData) {
+
     }
 
     @Override

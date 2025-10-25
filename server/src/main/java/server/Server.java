@@ -33,18 +33,24 @@ public class Server {
             config.jsonMapper(new JavalinGson()); // Use Javalin's Gson plugin
         });
 
-        javalin.exception(AlreadyTakenException.class, (e, ctx) -> {
-            ctx.status(403).json(new ErrorResponse(e.getMessage())); // Forbidden status
-        });
 
         javalin.exception(BadRequestException.class, (e, ctx) -> {
             ctx.status(400).json(new ErrorResponse(e.getMessage())); // Bad Request status
         });
 
+        javalin.exception(UnauthorizedException.class, (e, ctx) -> {
+            ctx.status(401).json(new ErrorResponse(e.getMessage())); // Forbidden status
+        });
 
-        // Register your endpoints and exception handlers here.
-        javalin.post("/user", this::register);
+        javalin.exception(AlreadyTakenException.class, (e, ctx) -> {
+            ctx.status(403).json(new ErrorResponse(e.getMessage())); // Forbidden status
+        });
+
+
+        //JAVALIN EVENTS
         javalin.delete("/db", this::deleteAll);
+        javalin.post("/user", this::register);
+        javalin.post("/session", this::login);
     }
 
     private void deleteAll(@NotNull Context ctx) {
@@ -58,6 +64,16 @@ public class Server {
         var req = serializer.fromJson(reqJson, UserData.class);
 
         var response = this.userService.register(req);
+        ctx.status(200).json(response);
+    }
+
+    private void login(@NotNull Context ctx) {
+
+        var serializer = new Gson();
+        String reqJson = ctx.body();
+        var req = serializer.fromJson(reqJson, UserData.class);
+
+        var response = this.userService.login(req);
         ctx.status(200).json(response);
     }
 
