@@ -22,4 +22,9 @@ public class SqlDataAccess implements DataAccess {
     public UserData getUser(String username) {
         return null;
     }
+
+    @Override
+    public boolean userExists(String userID) {
+        return false;
+    }
 }

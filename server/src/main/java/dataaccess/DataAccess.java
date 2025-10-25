@@ -9,6 +9,7 @@ public interface DataAccess {
 
     void createUser(UserData user);
 
-    UserData getUser(String username);
+    UserData getUser(String userID);
 
+    boolean userExists(String userID);
 }

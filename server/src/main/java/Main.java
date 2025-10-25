@@ -1,4 +1,5 @@
 import chess.*;
+import model.UserData;
 import server.Server;
 import service.UserService;
 
