@@ -51,6 +51,10 @@ public class Server {
         javalin.delete("/db", this::deleteAll);
         javalin.post("/user", this::register);
         javalin.post("/session", this::login);
+
+
+        //for some reason haveing a duplicate post .post("/session" causes all of the tests to
+        //explode but everything else seems to work just fine.
         javalin.post("/session", this::logout);
     }
 
