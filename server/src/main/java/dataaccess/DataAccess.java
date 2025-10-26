@@ -14,12 +14,14 @@ public interface DataAccess {
 
     boolean userExists(String userID);
 
-    boolean validPasword(UserData user);
+    boolean validatePassword(UserData user);
 
     void addAuth(AuthData authData);
 
     boolean userHasAuthdata(String UserID);
 
-    AuthData getAuthdata(String UserID);
+    boolean validateAuthdata(AuthData authdata);
+
+    void removeAuth(AuthData authData);
 
 }

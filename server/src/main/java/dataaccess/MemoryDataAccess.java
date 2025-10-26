@@ -37,7 +37,7 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public boolean validPasword(UserData user) {
+    public boolean validatePassword(UserData user) {
         return Objects.equals(user.password(), userDB.get(user.username()).password());
     }
 
@@ -56,9 +56,13 @@ public class MemoryDataAccess implements DataAccess {
         return authDB.containsKey(UserID);
     }
 
+    public boolean validateAuthdata(AuthData authData) {
+        return Objects.equals(authData.authToken(), authDB.get(authData.username()).authToken());
+    }
+
     @Override
-    public AuthData getAuthdata(String UserID) {
-        return authDB.get(UserID);
+    public void removeAuth(AuthData authData) {
+        authDB.remove(authData.username());
     }
 
 
