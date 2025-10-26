@@ -41,7 +41,7 @@ public class UserService {
         if (!dataAccess.userExists(user.username())) {
             throw new UnauthorizedException("Error: unauthorized");
         }
-        if (!dataAccess.validPasword(user)) {
+        if (!dataAccess.validatePassword(user)) {
             throw new UnauthorizedException("Error: unauthorized");
         }
 
@@ -50,6 +50,14 @@ public class UserService {
         return authData;
     }
 
+
+    public void logout(String authData) {
+        //make sure the User exits
+        if (!dataAccess.authTokenExists(authData)) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
+        dataAccess.removeAuth(authData);
+    }
 
     private String generateAuthToken() {
         return UUID.randomUUID().toString();

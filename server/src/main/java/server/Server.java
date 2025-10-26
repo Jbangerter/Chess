@@ -51,6 +51,7 @@ public class Server {
         javalin.delete("/db", this::deleteAll);
         javalin.post("/user", this::register);
         javalin.post("/session", this::login);
+        javalin.delete("/session", this::logout);
     }
 
     private void deleteAll(@NotNull Context ctx) {
@@ -75,6 +76,14 @@ public class Server {
 
         var response = this.userService.login(req);
         ctx.status(200).json(response);
+    }
+
+    private void logout(@NotNull Context ctx) {
+
+        var req = ctx.header("Authorization");
+
+        this.userService.logout(req);
+        ctx.status(200).json("{}");
     }
 
 
