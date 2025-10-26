@@ -2,11 +2,9 @@ package UserService;
 
 import Exceptions.*;
 import dataaccess.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
+import passoff.model.TestResult;
 import service.UserService;
 
 import model.UserData;
@@ -21,6 +19,7 @@ public class UserServiceTests {
     private UserService userService;
     private UserData testUser;
     private UserData existingUser;
+    private AuthData existingUserAuth;
 
 
     @BeforeEach
@@ -32,7 +31,7 @@ public class UserServiceTests {
         existingUser = new UserData("Exisitingusername", "Exisitingemail", "Exisitingpasssword");
         testUser = new UserData("username", "email", "passsword");
 
-        userService.register(existingUser);
+        existingUserAuth = userService.register(existingUser);
     }
 
 
@@ -128,5 +127,22 @@ public class UserServiceTests {
         assertEquals("Error: bad request", exception.getMessage());
     }
 
+    //LOGOUT TESTS
 
+    @Test
+    public void logoutSuccess() {
+
+        userService.logout(existingUserAuth.authToken());
+
+        assertFalse(dataAccess.authTokenExists(existingUserAuth.authToken()));
+        assertFalse(dataAccess.userHasAuthdata(existingUserAuth));
+    }
+
+    @Test
+    public void logoutInvalid() {
+        UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> userService.logout("HiIamInvalidUUID"));
+        assertEquals("Error: unauthorized", exception.getMessage());
+
+
+    }
 }

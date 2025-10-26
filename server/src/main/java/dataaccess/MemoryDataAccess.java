@@ -52,11 +52,17 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public boolean userHasAuthdata(String UserID) {
-        return authDB.containsKey(UserID);
+    public boolean userHasAuthdata(AuthData authData) {
+        if (authDB.get(authData.authToken()) == null) {
+            return false;
+        }
+        return (Objects.equals(authDB.get(authData.authToken()).username(), authData.username()));
     }
 
     public boolean validateAuthdata(AuthData authData) {
+        if (authDB.get(authData.authToken()) == null) {
+            return false;
+        }
         return Objects.equals(authData.username(), authDB.get(authData.authToken()).username());
     }
 

@@ -18,7 +18,7 @@ public interface DataAccess {
 
     void addAuth(AuthData authData);
 
-    boolean userHasAuthdata(String UserID);
+    boolean userHasAuthdata(AuthData authData);
 
     boolean validateAuthdata(AuthData authData);
 
