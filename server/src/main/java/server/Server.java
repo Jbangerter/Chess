@@ -58,6 +58,7 @@ public class Server {
         javalin.post("/session", this::login);
         javalin.delete("/session", this::logout);
         javalin.post("/game", this::createGame);
+        javalin.put("/game", this::joinGame);
     }
 
     private void deleteAll(@NotNull Context ctx) {
