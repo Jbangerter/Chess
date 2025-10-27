@@ -4,7 +4,6 @@ import Exceptions.*;
 import dataaccess.*;
 import org.junit.jupiter.api.*;
 
-import passoff.model.TestResult;
 import service.UserService;
 
 import model.UserData;
@@ -135,7 +134,7 @@ public class UserServiceTests {
         userService.logout(existingUserAuth.authToken());
 
         assertFalse(dataAccess.authTokenExists(existingUserAuth.authToken()));
-        assertFalse(dataAccess.userHasAuthdata(existingUserAuth));
+        assertFalse(dataAccess.validateUserHasAuthdata(existingUserAuth));
     }
 
     @Test

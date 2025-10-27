@@ -52,19 +52,23 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public boolean userHasAuthdata(AuthData authData) {
+    public boolean validateUserHasAuthdata(AuthData authData) {
         if (authDB.get(authData.authToken()) == null) {
             return false;
         }
         return (Objects.equals(authDB.get(authData.authToken()).username(), authData.username()));
     }
 
-    public boolean validateAuthdata(AuthData authData) {
-        if (authDB.get(authData.authToken()) == null) {
-            return false;
-        }
-        return Objects.equals(authData.username(), authDB.get(authData.authToken()).username());
+    @Override
+    public AuthData getAuthdataFromAuthtoken(String authToken) {
+        return authDB.get(authToken);
     }
+
+    @Override
+    public boolean validateAuthToken(String authToken) {
+        return authTokenExists(authToken);
+    }
+
 
     @Override
     public boolean authTokenExists(String authToken) {
@@ -74,6 +78,37 @@ public class MemoryDataAccess implements DataAccess {
     @Override
     public void removeAuth(String authData) {
         authDB.remove(authData);
+    }
+
+    @Override
+    public void createGame(GameData game) {
+        gameDB.put(String.valueOf(game.gameID()), game);
+    }
+
+    @Override
+    public void updateGame(GameData game) {
+        gameDB.remove(String.valueOf(game.gameID()));
+        gameDB.put(String.valueOf(game.gameID()), game);
+    }
+
+    @Override
+    public int numGames() {
+        return gameDB.size();
+    }
+
+    @Override
+    public boolean gameIDExists(int gameID) {
+        return gameDB.containsKey(String.valueOf(gameID));
+    }
+
+    @Override
+    public GameData getGame(int gameID) {
+        return gameDB.get(String.valueOf(gameID));
+    }
+
+    @Override
+    public GameData[] listGames() {
+        return gameDB.values().toArray(new GameData[0]);
     }
 
 

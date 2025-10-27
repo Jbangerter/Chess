@@ -2,6 +2,7 @@ package server;
 
 import Exceptions.*;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import dataaccess.MemoryDataAccess;
 import io.javalin.*;
@@ -13,6 +14,8 @@ import io.javalin.http.Context;
 import org.jetbrains.annotations.NotNull;
 import service.*;
 import model.*;
+import service.GameServiceRecords.CreateGameInput;
+import service.GameServiceRecords.JoinGameInput;
 
 public class Server {
 
@@ -20,10 +23,12 @@ public class Server {
 
     private MemoryDataAccess dataAccess;
     private UserService userService;
+    private GameService gameService;
 
     public Server() {
         dataAccess = new MemoryDataAccess();
         userService = new UserService(dataAccess);
+        gameService = new GameService(dataAccess);
 
         //javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
@@ -52,6 +57,7 @@ public class Server {
         javalin.post("/user", this::register);
         javalin.post("/session", this::login);
         javalin.delete("/session", this::logout);
+        javalin.post("/game", this::createGame);
     }
 
     private void deleteAll(@NotNull Context ctx) {
@@ -83,6 +89,37 @@ public class Server {
         var req = ctx.header("Authorization");
 
         this.userService.logout(req);
+        ctx.status(200).json("{}");
+    }
+
+    private void createGame(@NotNull Context ctx) {
+
+        var authToken = ctx.header("Authorization");
+
+        var serializer = new Gson();
+        String reqJson = ctx.body();
+        var req = serializer.fromJson(reqJson, CreateGameInput.class);
+
+        var response = this.gameService.createGame(authToken, req.gameName());
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("gameID", response);
+
+
+        ctx.status(200).json(jsonObject);
+
+    }
+
+    private void joinGame(@NotNull Context ctx) {
+
+        var authToken = ctx.header("Authorization");
+
+        var serializer = new Gson();
+        String reqJson = ctx.body();
+        var req = serializer.fromJson(reqJson, JoinGameInput.class);
+
+        this.gameService.joinGame(authToken, req.playerColor(), req.gameID());
+
         ctx.status(200).json("{}");
     }
 
