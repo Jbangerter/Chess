@@ -4,7 +4,14 @@ import Exceptions.*;
 import chess.ChessGame;
 import dataaccess.MemoryDataAccess;
 import model.*;
+import com.google.gson.JsonArray;
+import com.google.gson.Gson;
+import service.GameServiceRecords.GameListData;
+import service.GameServiceRecords.ShortenedGameData;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 public class GameService {
@@ -15,12 +22,20 @@ public class GameService {
         this.dataAccess = dataAccess;
     }
 
-    public GameData[] listGames(String authToken) {
+    public GameListData listGames(String authToken) {
         if (!dataAccess.validateAuthToken(authToken)) {
             throw new UnauthorizedException("Error: unauthorized");
         }
 
-        return dataAccess.listGames();
+        Collection<ShortenedGameData> gameList = new ArrayList<>();
+
+        Collection<GameData> unprocessedGames = dataAccess.listGames();
+
+        for (GameData game : unprocessedGames) {
+            gameList.add(new ShortenedGameData(game.gameID(), game.whiteUsername(), game.blackUsername(), game.gameName()));
+        }
+
+        return new GameListData(gameList);
     }
 
     public int createGame(String authToken, String gameName) {
@@ -33,7 +48,7 @@ public class GameService {
 
 
         int gameID = dataAccess.numGames() + 1;
-        dataAccess.createGame(new GameData(gameID, "", "", gameName, new ChessGame()));
+        dataAccess.createGame(new GameData(gameID, null, null, gameName, new ChessGame()));
 
         return gameID;
     }
@@ -57,17 +72,16 @@ public class GameService {
 
 
         if (playerColor == ChessGame.TeamColor.BLACK) {
-            if (!Objects.equals(game.blackUsername(), "")) {
+            if (game.blackUsername() != null) {
                 throw new AlreadyTakenException("Error: already taken");
             }
 
             updatedGame = new GameData(game.gameID(), game.whiteUsername(), userData.username(), game.gameName(), game.game());
 
         } else if (playerColor == ChessGame.TeamColor.WHITE) {
-            if (!Objects.equals(game.whiteUsername(), "")) {
+            if (game.whiteUsername() != null) {
                 throw new AlreadyTakenException("Error: already taken");
             }
-
             updatedGame = new GameData(game.gameID(), userData.username(), game.blackUsername(), game.gameName(), game.game());
         } else {
             throw new BadRequestException("Error: bad request");

@@ -59,6 +59,7 @@ public class Server {
         javalin.delete("/session", this::logout);
         javalin.post("/game", this::createGame);
         javalin.put("/game", this::joinGame);
+        javalin.get("/game", this::listGames);
     }
 
     private void deleteAll(@NotNull Context ctx) {
@@ -122,6 +123,23 @@ public class Server {
         this.gameService.joinGame(authToken, req.playerColor(), req.gameID());
 
         ctx.status(200).json("{}");
+    }
+
+    private void listGames(@NotNull Context ctx) {
+
+        var authToken = ctx.header("Authorization");
+
+        var gamesList = this.gameService.listGames(authToken);
+
+        if (gamesList == null) {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("game", "[]");
+
+            ctx.status(200).json(jsonObject);
+        }
+
+        ctx.status(200).json(gamesList);
+
     }
 
 

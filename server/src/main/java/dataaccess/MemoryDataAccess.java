@@ -4,6 +4,8 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -107,9 +109,13 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public GameData[] listGames() {
-        return gameDB.values().toArray(new GameData[0]);
-    }
+    public Collection<GameData> listGames() {
+        if (gameDB.values() != null) {
+            return gameDB.values();
 
+        } else {
+            return Collections.emptyList();
+        }
+    }
 
 }
