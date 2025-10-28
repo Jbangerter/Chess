@@ -12,8 +12,8 @@ import io.javalin.http.Context;
 import org.jetbrains.annotations.NotNull;
 import service.*;
 import model.*;
-import service.gameServiceRecords.createGameInput;
-import service.gameServiceRecords.joinGameInput;
+import service.gameServiceRecords.CreateGameInput;
+import service.gameServiceRecords.JoinGameInput;
 
 public class Server {
 
@@ -98,7 +98,7 @@ public class Server {
 
         var serializer = new Gson();
         String reqJson = ctx.body();
-        var req = serializer.fromJson(reqJson, createGameInput.class);
+        var req = serializer.fromJson(reqJson, CreateGameInput.class);
 
         var response = this.gameService.createGame(authToken, req.gameName());
 
@@ -116,7 +116,7 @@ public class Server {
 
         var serializer = new Gson();
         String reqJson = ctx.body();
-        var req = serializer.fromJson(reqJson, joinGameInput.class);
+        var req = serializer.fromJson(reqJson, JoinGameInput.class);
 
         this.gameService.joinGame(authToken, req.playerColor(), req.gameID());
 

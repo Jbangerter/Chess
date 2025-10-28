@@ -2,5 +2,5 @@ package service.gameServiceRecords;
 
 import java.util.Collection;
 
-public record gameListData(Collection<shortenedGameData> games) {
+public record GameListData(Collection<ShortenedGameData> games) {
 }

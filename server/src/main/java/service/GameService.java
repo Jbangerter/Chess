@@ -4,8 +4,8 @@ import exceptions.*;
 import chess.ChessGame;
 import dataaccess.MemoryDataAccess;
 import model.*;
-import service.gameServiceRecords.gameListData;
-import service.gameServiceRecords.shortenedGameData;
+import service.gameServiceRecords.GameListData;
+import service.gameServiceRecords.ShortenedGameData;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,20 +18,20 @@ public class GameService {
         this.dataAccess = dataAccess;
     }
 
-    public gameListData listGames(String authToken) {
+    public GameListData listGames(String authToken) {
         if (!dataAccess.validateAuthToken(authToken)) {
             throw new UnauthorizedException("Error: unauthorized");
         }
 
-        Collection<shortenedGameData> gameList = new ArrayList<>();
+        Collection<ShortenedGameData> gameList = new ArrayList<>();
 
         Collection<GameData> unprocessedGames = dataAccess.listGames();
 
         for (GameData game : unprocessedGames) {
-            gameList.add(new shortenedGameData(game.gameID(), game.whiteUsername(), game.blackUsername(), game.gameName()));
+            gameList.add(new ShortenedGameData(game.gameID(), game.whiteUsername(), game.blackUsername(), game.gameName()));
         }
 
-        return new gameListData(gameList);
+        return new GameListData(gameList);
     }
 
     public int createGame(String authToken, String gameName) {
