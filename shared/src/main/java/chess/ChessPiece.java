@@ -378,8 +378,11 @@ public class ChessPiece {
             return legalMoves;
         }
 
-        private void tryMove(ChessPosition startPosition, int deltaRow, int deltaCol, ChessGame.TeamColor pieceColor, boolean isAttcking, Collection<ChessMove> moves) {
-
+        private void tryMove(ChessPosition startPosition,
+                             int deltaRow, int deltaCol,
+                             ChessGame.TeamColor pieceColor,
+                             boolean isAttcking,
+                             Collection<ChessMove> moves) {
 
             if (((startPosition.getRow() + deltaRow) > 8) || ((startPosition.getRow() + deltaRow) < 1)) {
                 return;
