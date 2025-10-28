@@ -342,19 +342,35 @@ public class ChessPiece {
             return moves;
         }
 
-        private void findWhitePawnPosition(int[][] validMoves, ChessPosition piecePosition, ChessBoard board, ChessGame.TeamColor pieceColor, Collection<ChessMove> moves) {
-            if (board.getPiece(new ChessPosition(piecePosition.getRow() + validMoves[0][0], piecePosition.getColumn() + (1))) != null) {
-                if (board.getPiece(new ChessPosition(piecePosition.getRow() + validMoves[0][0], piecePosition.getColumn() + (1))).getTeamColor() != pieceColor) {
-                    tryMove(piecePosition, validMoves[0][0], 1, pieceColor, true, moves);
-                }
+        private void findWhitePawnPosition(int[][] validMoves,
+                                           ChessPosition piecePosition,
+                                           ChessBoard board,
+                                           ChessGame.TeamColor pieceColor,
+                                           Collection<ChessMove> moves) {
+            int nextRow = piecePosition.getRow() + validMoves[0][0];
+            int nextCol = piecePosition.getColumn() + 1;
+            ChessPosition newPosition = new ChessPosition(nextRow, nextCol);
+
+            ChessPiece targetPiece = board.getPiece(newPosition);
+
+            if (targetPiece != null && targetPiece.getTeamColor() != pieceColor) {
+                tryMove(piecePosition, validMoves[0][0], 1, pieceColor, true, moves);
             }
         }
 
-        private void findBlackPawnPosistions(int[][] validMoves, ChessPosition piecePosition, ChessBoard board, ChessGame.TeamColor pieceColor, Collection<ChessMove> moves) {
-            if (board.getPiece(new ChessPosition(piecePosition.getRow() + validMoves[0][0], piecePosition.getColumn() + (-1))) != null) {
-                if (board.getPiece(new ChessPosition(piecePosition.getRow() + validMoves[0][0], piecePosition.getColumn() + (-1))).getTeamColor() != pieceColor) {
-                    tryMove(piecePosition, validMoves[0][0], -1, pieceColor, true, moves);
-                }
+        private void findBlackPawnPosistions(int[][] validMoves,
+                                             ChessPosition piecePosition,
+                                             ChessBoard board,
+                                             ChessGame.TeamColor pieceColor,
+                                             Collection<ChessMove> moves) {
+            int nextRow = piecePosition.getRow() + validMoves[0][0];
+            int nextCol = piecePosition.getColumn() - 1;
+            ChessPosition newPosition = new ChessPosition(nextRow, nextCol);
+
+            ChessPiece targetPiece = board.getPiece(newPosition);
+
+            if (targetPiece != null && targetPiece.getTeamColor() != pieceColor) {
+                tryMove(piecePosition, validMoves[0][0], -1, pieceColor, true, moves);
             }
         }
 
