@@ -96,7 +96,9 @@ public class UserServiceTests {
 
     @Test
     void loginInvalidPassword() {
-        UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> userService.login(new UserData(existingUser.username(), null, "nottherightpassword")));
+        var user = new UserData(existingUser.username(), null, "nope");
+
+        UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> userService.login(user));
         assertEquals("Error: unauthorized", exception.getMessage());
 
     }

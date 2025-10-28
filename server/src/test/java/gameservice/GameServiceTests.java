@@ -14,6 +14,7 @@ import model.AuthData;
 
 import java.util.Collection;
 
+import static chess.ChessGame.TeamColor.BLACK;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("GameService Tests")
@@ -69,7 +70,7 @@ public class GameServiceTests {
         int gameId = gameService.createGame(existingUserAuth.authToken(), "exampleGame");
 
 
-        gameService.joinGame(existingUserAuth.authToken(), ChessGame.TeamColor.BLACK, gameId);
+        gameService.joinGame(existingUserAuth.authToken(), BLACK, gameId);
 
         GameData game = dataAccess.getGame(gameId);
 
@@ -82,7 +83,7 @@ public class GameServiceTests {
     public void unauthorizedJoinGame() {
         int gameId = gameService.createGame(existingUserAuth.authToken(), "exampleGame");
 
-        UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> gameService.joinGame("asdf", ChessGame.TeamColor.BLACK, gameId));
+        UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> gameService.joinGame("asdf", BLACK, gameId));
         assertEquals("Error: unauthorized", exception.getMessage());
 
         GameData game = dataAccess.getGame(gameId);
