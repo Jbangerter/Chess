@@ -179,7 +179,10 @@ public class ChessGame {
     }
 
 
-    private boolean checkAllPiecesForSafeMoves(ChessBoard board, TeamColor teamColor, Collection<ChessMove> possibleMoves, ArrayList<ChessPosition> friendlyPieces) {
+    private boolean checkAllPiecesForSafeMoves(ChessBoard board,
+                                               TeamColor teamColor,
+                                               Collection<ChessMove> possibleMoves,
+                                               ArrayList<ChessPosition> friendlyPieces) {
         for (ChessPosition piece : friendlyPieces) {
             possibleMoves.addAll(board.getPiece(piece).pieceMoves(board, piece));
         }

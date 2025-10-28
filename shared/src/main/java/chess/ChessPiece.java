@@ -97,7 +97,12 @@ public class ChessPiece {
             pieceColor = board.getPiece(myPosition).getTeamColor();
         }
 
-        protected Collection<ChessMove> findLegalMoves(boolean canPromote, boolean canIterate, int[][] validMoves, ChessPosition piecePosition, ChessBoard board, ChessGame.TeamColor pieceColor) {
+        protected Collection<ChessMove> findLegalMoves(boolean canPromote,
+                                                       boolean canIterate,
+                                                       int[][] validMoves,
+                                                       ChessPosition piecePosition,
+                                                       ChessBoard board,
+                                                       ChessGame.TeamColor pieceColor) {
             Collection<ChessMove> moves = new ArrayList<>(List.of());
             ChessMove nextMove;
 
@@ -108,7 +113,14 @@ public class ChessPiece {
             return moves;
         }
 
-        private void exploreLegalMoves(boolean canIterate, ChessPosition initialPosition, ChessPosition position, int deltaRow, int deltaCol, ChessBoard board, ChessGame.TeamColor pieceColor, Collection<ChessMove> moves) {
+        private void exploreLegalMoves(boolean canIterate,
+                                       ChessPosition initialPosition,
+                                       ChessPosition position,
+                                       int deltaRow,
+                                       int deltaCol,
+                                       ChessBoard board,
+                                       ChessGame.TeamColor pieceColor,
+                                       Collection<ChessMove> moves) {
 
             if (moveInBounds(position, deltaRow, deltaCol)) {
                 ChessPosition nextPosition = new ChessPosition((position.getRow() + deltaRow), (position.getColumn() + deltaCol));
@@ -297,7 +309,12 @@ public class ChessPiece {
 
 
         @Override
-        protected Collection<ChessMove> findLegalMoves(boolean canPromote, boolean canIterate, int[][] validMoves, ChessPosition piecePosition, ChessBoard board, ChessGame.TeamColor pieceColor) {
+        protected Collection<ChessMove> findLegalMoves(boolean canPromote,
+                                                       boolean canIterate,
+                                                       int[][] validMoves,
+                                                       ChessPosition piecePosition,
+                                                       ChessBoard board,
+                                                       ChessGame.TeamColor pieceColor) {
             Collection<ChessMove> moves = new ArrayList<>();
 
 
