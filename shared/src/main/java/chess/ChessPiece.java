@@ -190,15 +190,12 @@ public class ChessPiece {
                     {-1, -1},
                     {1, -1}
             };
-
             legalMoves = findLegalMoves(canPromote, canIterate, validMoves, myPosition, board, pieceColor);
         }
-
 
         public Collection<ChessMove> getLegalMoves() {
             return legalMoves;
         }
-
     }
 
     private class QueenLogic extends ChessLogic {
@@ -219,15 +216,12 @@ public class ChessPiece {
                     {-1, -1},
                     {1, -1}
             };
-
             legalMoves = findLegalMoves(canPromote, canIterate, validMoves, myPosition, board, pieceColor);
         }
-
 
         public Collection<ChessMove> getLegalMoves() {
             return legalMoves;
         }
-
     }
 
     private class KnightLogic extends ChessLogic {
