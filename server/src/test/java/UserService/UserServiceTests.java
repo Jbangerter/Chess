@@ -76,7 +76,7 @@ public class UserServiceTests {
     void registerExistingUserThrowsAlreadyTakenException() {
         userService.register(testUser);
 
-        alreadytakenexception exception = assertThrows(alreadytakenexception.class, () -> userService.register(testUser));
+        AlreadyTakenException exception = assertThrows(AlreadyTakenException.class, () -> userService.register(testUser));
         assertEquals("Error: already taken", exception.getMessage());
 
     }

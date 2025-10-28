@@ -45,7 +45,7 @@ public class Server {
             ctx.status(401).json(new ErrorResponse(e.getMessage())); // Forbidden status
         });
 
-        javalin.exception(alreadytakenexception.class, (e, ctx) -> {
+        javalin.exception(AlreadyTakenException.class, (e, ctx) -> {
             ctx.status(403).json(new ErrorResponse(e.getMessage())); // Forbidden status
         });
 

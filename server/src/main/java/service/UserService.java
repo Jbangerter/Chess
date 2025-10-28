@@ -21,7 +21,7 @@ public class UserService {
             throw new BadRequestException("Error: bad request");
         }
         if (dataAccess.userExists(user.username())) {
-            throw new alreadytakenexception("Error: already taken");
+            throw new AlreadyTakenException("Error: already taken");
         }
 
         AuthData authData = new AuthData(user.username(), generateAuthToken());

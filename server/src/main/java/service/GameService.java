@@ -69,14 +69,14 @@ public class GameService {
 
         if (playerColor == ChessGame.TeamColor.BLACK) {
             if (game.blackUsername() != null) {
-                throw new alreadytakenexception("Error: already taken");
+                throw new AlreadyTakenException("Error: already taken");
             }
 
             updatedGame = new GameData(game.gameID(), game.whiteUsername(), userData.username(), game.gameName(), game.game());
 
         } else if (playerColor == ChessGame.TeamColor.WHITE) {
             if (game.whiteUsername() != null) {
-                throw new alreadytakenexception("Error: already taken");
+                throw new AlreadyTakenException("Error: already taken");
             }
             updatedGame = new GameData(game.gameID(), userData.username(), game.blackUsername(), game.gameName(), game.game());
         } else {
