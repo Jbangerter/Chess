@@ -181,14 +181,16 @@ public class ChessPiece {
             canIterate = false;
 
             int[][] validMoves = {
-                    {0, 1},
-                    {0, -1},
-                    {1, 0},
-                    {-1, 0},
+
                     {1, 1},
                     {-1, 1},
                     {-1, -1},
-                    {1, -1}
+                    {1, -1},
+                    {0, 1},
+                    {0, -1},
+                    {1, 0},
+                    {-1, 0}
+
             };
             legalMoves = findLegalMoves(canPromote, canIterate, validMoves, myPosition, board, pieceColor);
         }
