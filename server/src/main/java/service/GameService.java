@@ -4,8 +4,8 @@ import exceptions.*;
 import chess.ChessGame;
 import dataaccess.MemoryDataAccess;
 import model.*;
-import service.gameServiceRecords.GameListData;
-import service.gameServiceRecords.ShortenedGameData;
+import service.gameservicerecords.GameListData;
+import service.gameservicerecords.ShortenedGameData;
 
 import java.util.ArrayList;
 import java.util.Collection;

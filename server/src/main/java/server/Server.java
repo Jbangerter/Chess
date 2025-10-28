@@ -12,8 +12,8 @@ import io.javalin.http.Context;
 import org.jetbrains.annotations.NotNull;
 import service.*;
 import model.*;
-import service.gameServiceRecords.CreateGameInput;
-import service.gameServiceRecords.JoinGameInput;
+import service.gameservicerecords.CreateGameInput;
+import service.gameservicerecords.JoinGameInput;
 
 public class Server {
 
