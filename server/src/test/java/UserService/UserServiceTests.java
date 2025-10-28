@@ -1,6 +1,6 @@
 package UserService;
 
-import Exceptions.*;
+import exceptions.*;
 import dataaccess.*;
 import org.junit.jupiter.api.*;
 
@@ -76,7 +76,7 @@ public class UserServiceTests {
     void registerExistingUserThrowsAlreadyTakenException() {
         userService.register(testUser);
 
-        AlreadyTakenException exception = assertThrows(AlreadyTakenException.class, () -> userService.register(testUser));
+        alreadytakenexception exception = assertThrows(alreadytakenexception.class, () -> userService.register(testUser));
         assertEquals("Error: already taken", exception.getMessage());
 
     }

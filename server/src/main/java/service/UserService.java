@@ -1,7 +1,7 @@
 package service;
 
 
-import Exceptions.*;
+import exceptions.*;
 import dataaccess.MemoryDataAccess;
 import model.*;
 
@@ -21,7 +21,7 @@ public class UserService {
             throw new BadRequestException("Error: bad request");
         }
         if (dataAccess.userExists(user.username())) {
-            throw new AlreadyTakenException("Error: already taken");
+            throw new alreadytakenexception("Error: already taken");
         }
 
         AuthData authData = new AuthData(user.username(), generateAuthToken());

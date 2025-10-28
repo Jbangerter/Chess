@@ -1,6 +1,6 @@
 package GameService;
 
-import Exceptions.*;
+import exceptions.*;
 import chess.ChessGame;
 import dataaccess.*;
 import model.GameData;
