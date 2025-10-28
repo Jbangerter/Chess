@@ -58,7 +58,7 @@ public class GameService {
         if (!dataAccess.validateAuthToken(authToken)) {
             throw new UnauthorizedException("Error: unauthorized");
         }
-        if (playerColor == null) {
+        if (!(playerColor == ChessGame.TeamColor.BLACK || playerColor == ChessGame.TeamColor.WHITE)) {
             throw new BadRequestException("Error: bad request");
         }
         if (!dataAccess.gameIDExists(gameID)) {
