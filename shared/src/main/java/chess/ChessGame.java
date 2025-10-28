@@ -198,16 +198,24 @@ public class ChessGame {
     private ChessPosition getKingPosition(ChessBoard board, TeamColor colorOfKing) {
         for (int row = 1; row <= 8; row++) {
             for (int column = 1; column <= 8; column++) {
-                if (board.getPiece(new ChessPosition(row, column)) != null) {
-                    if (board.getPiece(new ChessPosition(row, column)).getPieceType() == KING) {
-                        if (board.getPiece(new ChessPosition(row, column)).getTeamColor() == colorOfKing) {
-                            return new ChessPosition(row, column);
-                        }
-                    }
+                ChessPosition positionOfKing = findKingPosition(board, colorOfKing, row, column);
+                if (positionOfKing != null) {
+                    return positionOfKing;
                 }
             }
         }
         throw new RuntimeException("No King Found, board is in invalid board state");
+    }
+
+    private static ChessPosition findKingPosition(ChessBoard board, TeamColor colorOfKing, int row, int column) {
+        if (board.getPiece(new ChessPosition(row, column)) != null) {
+            if (board.getPiece(new ChessPosition(row, column)).getPieceType() == KING) {
+                if (board.getPiece(new ChessPosition(row, column)).getTeamColor() == colorOfKing) {
+                    return new ChessPosition(row, column);
+                }
+            }
+        }
+        return null;
     }
 
 

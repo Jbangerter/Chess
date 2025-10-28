@@ -46,10 +46,6 @@ public class ChessPiece {
         return type;
     }
 
-    public void promote(PieceType promotion) {
-        type = promotion;
-    }
-
     /**
      * Calculates all the positions a chess piece can move to
      * Does not take into account moves that are illegal due to leaving the king in
@@ -118,8 +114,6 @@ public class ChessPiece {
                 ChessPosition nextPosition = new ChessPosition((position.getRow() + deltaRow), (position.getColumn() + deltaCol));
                 ChessMove nextMove = new ChessMove(initialPosition, nextPosition, null);
                 ChessPiece nextSquare = board.getPiece(nextPosition);
-
-                // System.out.println(initialPosition);
 
 
                 if (nextSquare == null) {
