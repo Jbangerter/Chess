@@ -64,25 +64,26 @@ public class ChessPiece {
 
         switch (pieceType) {
             case KING:
-                return new kingLogic(board, myPosition).getLegalMoves();
+                return new KingLogic(board, myPosition).getLegalMoves();
             case QUEEN:
-                return new queenLogic(board, myPosition).getLegalMoves();
+                return new QueenLogic(board, myPosition).getLegalMoves();
             case BISHOP:
-                return new bishopLogic(board, myPosition).getLegalMoves();
+                return new BishopLogic(board, myPosition).getLegalMoves();
             case KNIGHT:
-                return new knightLogic(board, myPosition).getLegalMoves();
+                return new KnightLogic(board, myPosition).getLegalMoves();
             case ROOK:
-                return new rookLogic(board, myPosition).getLegalMoves();
+                return new RookLogic(board, myPosition).getLegalMoves();
             case PAWN:
-                return new pawnLogic(board, myPosition).getLegalMoves();
+                return new PawnLogic(board, myPosition).getLegalMoves();
             default:
                 throw new IllegalArgumentException("Invalid piece type");
         }
 
+
     }
 
 
-    private abstract static class chessLogic {
+    private abstract static class ChessLogic {
         protected ChessBoard board;
         protected ChessPosition myPosition;
         protected ChessPiece piece;
@@ -92,7 +93,7 @@ public class ChessPiece {
 
         protected Collection<ChessMove> legalMoves = new ArrayList<>();
 
-        public chessLogic(ChessBoard board, ChessPosition myPosition) {
+        public ChessLogic(ChessBoard board, ChessPosition myPosition) {
             this.board = board;
             this.myPosition = myPosition;
 
@@ -146,9 +147,9 @@ public class ChessPiece {
         }
     }
 
-    private class bishopLogic extends chessLogic {
+    private class BishopLogic extends ChessLogic {
 
-        public bishopLogic(ChessBoard board, ChessPosition myPosition) {
+        public BishopLogic(ChessBoard board, ChessPosition myPosition) {
             super(board, myPosition);
 
             canPromote = false;
@@ -171,9 +172,9 @@ public class ChessPiece {
 
     }
 
-    private class kingLogic extends chessLogic {
+    private class KingLogic extends ChessLogic {
 
-        public kingLogic(ChessBoard board, ChessPosition myPosition) {
+        public KingLogic(ChessBoard board, ChessPosition myPosition) {
             super(board, myPosition);
 
             canPromote = false;
@@ -200,9 +201,9 @@ public class ChessPiece {
 
     }
 
-    private class queenLogic extends chessLogic {
+    private class QueenLogic extends ChessLogic {
 
-        public queenLogic(ChessBoard board, ChessPosition myPosition) {
+        public QueenLogic(ChessBoard board, ChessPosition myPosition) {
             super(board, myPosition);
 
             canPromote = false;
@@ -229,9 +230,9 @@ public class ChessPiece {
 
     }
 
-    private class knightLogic extends chessLogic {
+    private class KnightLogic extends ChessLogic {
 
-        public knightLogic(ChessBoard board, ChessPosition myPosition) {
+        public KnightLogic(ChessBoard board, ChessPosition myPosition) {
             super(board, myPosition);
 
             canPromote = false;
@@ -258,9 +259,9 @@ public class ChessPiece {
 
     }
 
-    private class rookLogic extends chessLogic {
+    private class RookLogic extends ChessLogic {
 
-        public rookLogic(ChessBoard board, ChessPosition myPosition) {
+        public RookLogic(ChessBoard board, ChessPosition myPosition) {
             super(board, myPosition);
 
             canPromote = false;
@@ -283,9 +284,9 @@ public class ChessPiece {
 
     }
 
-    private class pawnLogic extends chessLogic {
+    private class PawnLogic extends ChessLogic {
 
-        public pawnLogic(ChessBoard board, ChessPosition myPosition) {
+        public PawnLogic(ChessBoard board, ChessPosition myPosition) {
             super(board, myPosition);
 
             canPromote = true;

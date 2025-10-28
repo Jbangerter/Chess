@@ -7,15 +7,13 @@ import com.google.gson.JsonObject;
 import dataaccess.MemoryDataAccess;
 import io.javalin.*;
 
-import java.util.*;
-
 import io.javalin.json.JavalinGson;
 import io.javalin.http.Context;
 import org.jetbrains.annotations.NotNull;
 import service.*;
 import model.*;
-import service.GameServiceRecords.CreateGameInput;
-import service.GameServiceRecords.JoinGameInput;
+import service.gameServiceRecords.createGameInput;
+import service.gameServiceRecords.joinGameInput;
 
 public class Server {
 
@@ -100,7 +98,7 @@ public class Server {
 
         var serializer = new Gson();
         String reqJson = ctx.body();
-        var req = serializer.fromJson(reqJson, CreateGameInput.class);
+        var req = serializer.fromJson(reqJson, createGameInput.class);
 
         var response = this.gameService.createGame(authToken, req.gameName());
 
@@ -118,7 +116,7 @@ public class Server {
 
         var serializer = new Gson();
         String reqJson = ctx.body();
-        var req = serializer.fromJson(reqJson, JoinGameInput.class);
+        var req = serializer.fromJson(reqJson, joinGameInput.class);
 
         this.gameService.joinGame(authToken, req.playerColor(), req.gameID());
 

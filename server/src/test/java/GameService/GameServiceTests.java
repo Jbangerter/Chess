@@ -6,16 +6,13 @@ import dataaccess.*;
 import model.GameData;
 import org.junit.jupiter.api.*;
 
-import passoff.model.*;
 import service.GameService;
 import service.UserService;
 
 import model.UserData;
 import model.AuthData;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -55,7 +52,7 @@ public class GameServiceTests {
     }
 
     @Test
-    public void UnauthorizedCreateGame() {
+    public void unauthorizedCreateGame() {
         UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> gameService.createGame("InvalidAuth", "exampleGame"));
         assertEquals("Error: unauthorized", exception.getMessage());
     }
@@ -82,7 +79,7 @@ public class GameServiceTests {
     }
 
     @Test
-    public void UnauthorizedJoinGame() {
+    public void unauthorizedJoinGame() {
         int gameId = gameService.createGame(existingUserAuth.authToken(), "exampleGame");
 
         UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> gameService.joinGame("asdf", ChessGame.TeamColor.BLACK, gameId));
