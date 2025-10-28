@@ -1,4 +1,4 @@
-package userservice;
+package service.userservice;
 
 import exceptions.*;
 import dataaccess.*;

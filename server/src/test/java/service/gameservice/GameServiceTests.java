@@ -1,4 +1,4 @@
-package gameservice;
+package service.gameservice;
 
 import exceptions.*;
 import chess.ChessGame;
