@@ -407,7 +407,7 @@ public class SqlDataAccess implements DataAccess {
 
     @Override
     public int numGames() {
-        String sql = "SELECT COUNT(*) FROM games";
+        String sql = "SELECT COUNT(*) AS total_count FROM games";
 
         try (Connection conn = DatabaseManager.getConnection();
              Statement stmt = conn.createStatement()) {
