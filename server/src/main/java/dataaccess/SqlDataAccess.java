@@ -9,6 +9,7 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.sql.*;
 import java.util.List;
@@ -464,11 +465,6 @@ public class SqlDataAccess implements DataAccess {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-
-                    String username = rs.getString("username");
-                    String email = rs.getString("email");
-                    String passwordHash = rs.getString("password_hash");
-
                     int dbGameID = rs.getInt("gameID");
                     String white = rs.getString("whiteUsername");
                     String black = rs.getString("blackUsername");
@@ -493,29 +489,39 @@ public class SqlDataAccess implements DataAccess {
 
     @Override
     public Collection<GameData> listGames() {
-//        String sql = "";
-//
-//        try (Connection conn = DatabaseManager.getConnection();
-//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//
-//            pstmt.setString(1, );
-//
-//            int rowsAffected = pstmt.executeUpdate();
-//
-//            try (ResultSet rs = pstmt.executeQuery()) {
-//                if (rs.next()) {
-//
-//                    return;
-//                }
-//            }
-//
-//        } catch (SQLException e) {
-//            System.err.println("Error: " + e.getMessage());
-//            e.printStackTrace();
-//        } catch (DataAccessException e) {
-//            throw new RuntimeException(e);
-//        }
+
+        String sql = "SELECT gameID, whiteUsername , blackUsername,gameName,gameState FROM games";
+        Gson gson = new Gson();
+        Collection<GameData> gameList = new ArrayList<>();
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+
+                    int dbGameID = rs.getInt("gameID");
+                    String white = rs.getString("whiteUsername");
+                    String black = rs.getString("blackUsername");
+                    String name = rs.getString("gameName");
+                    String gameJson = rs.getString("gameState");
+
+                    ChessGame game = gson.fromJson(gameJson, ChessGame.class);
+
+                    gameList.add(new GameData(dbGameID, white, black, name, game));
+                }
+            }
+
+            return gameList;
+        } catch (SQLException e) {
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+
         return null;
+
     }
 
     private String hashPassword(String password) {
