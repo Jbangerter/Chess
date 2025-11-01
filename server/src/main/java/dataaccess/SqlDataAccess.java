@@ -390,21 +390,29 @@ public class SqlDataAccess implements DataAccess {
 
     @Override
     public void updateGame(GameData game) {
-//        String sql = "";
-//
-//        try (Connection conn = DatabaseManager.getConnection();
-//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//
-//            pstmt.setString(1, );
-//
-//            int rowsAffected = pstmt.executeUpdate();
-//
-//        } catch (SQLException e) {
-//            System.err.println("Error: " + e.getMessage());
-//            e.printStackTrace();
-//        } catch (DataAccessException e) {
-//            throw new RuntimeException(e);
-//        }
+        String sql = "UPDATE games SET whiteUsername = ?, blackUsername = ? ,gameName = ? ,gameState = ? WHERE gameID = ?";
+
+        Gson gson = new Gson();
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+
+            pstmt.setString(1, game.whiteUsername());
+            pstmt.setString(2, game.blackUsername());
+            pstmt.setString(3, game.gameName());
+            pstmt.setString(4, gson.toJson(game.game()));
+
+            pstmt.setInt(5, game.gameID());
+
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
