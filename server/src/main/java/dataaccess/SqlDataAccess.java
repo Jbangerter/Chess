@@ -1,5 +1,6 @@
 package dataaccess;
 
+import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -452,27 +453,41 @@ public class SqlDataAccess implements DataAccess {
 
     @Override
     public GameData getGame(int gameID) {
-//        String sql = "";
-//
-//        try (Connection conn = DatabaseManager.getConnection();
-//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//
-//            pstmt.setString(1, );
-//
-//
-//            try (ResultSet rs = pstmt.executeQuery()) {
-//                if (rs.next()) {
-//
-//                    return;
-//                }
-//            }
-//
-//        } catch (SQLException e) {
-//            System.err.println("Error: " + e.getMessage());
-//            e.printStackTrace();
-//        } catch (DataAccessException e) {
-//            throw new RuntimeException(e);
-//        }
+
+        String sql = "SELECT gameID, whiteUsername , blackUsername,gameName,gameState FROM games WHERE gameID = ?";
+        Gson gson = new Gson();
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, gameID);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+
+                    String username = rs.getString("username");
+                    String email = rs.getString("email");
+                    String passwordHash = rs.getString("password_hash");
+
+                    int dbGameID = rs.getInt("gameID");
+                    String white = rs.getString("whiteUsername");
+                    String black = rs.getString("blackUsername");
+                    String name = rs.getString("gameName");
+                    String gameJson = rs.getString("gameState");
+
+                    ChessGame game = gson.fromJson(gameJson, ChessGame.class);
+
+                    return new GameData(dbGameID, white, black, name, game);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+
         return null;
     }
 
