@@ -1,5 +1,6 @@
 package service;
 
+import dataaccess.SqlDataAccess;
 import exceptions.*;
 import chess.ChessGame;
 import dataaccess.MemoryDataAccess;
@@ -12,11 +13,12 @@ import java.util.Collection;
 
 public class GameService {
 
-    private final MemoryDataAccess dataAccess;
+    private final SqlDataAccess dataAccess;
 
-    public GameService(MemoryDataAccess dataAccess) {
+    public GameService(SqlDataAccess dataAccess) {
         this.dataAccess = dataAccess;
     }
+
 
     public GameListData listGames(String authToken) {
         if (!dataAccess.validateAuthToken(authToken)) {

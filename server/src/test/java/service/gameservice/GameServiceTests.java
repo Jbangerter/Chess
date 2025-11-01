@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class GameServiceTests {
 
 
-    private MemoryDataAccess dataAccess;
+    private SqlDataAccess dataAccess;
     private UserService userService;
     private GameService gameService;
 
@@ -32,7 +32,7 @@ public class GameServiceTests {
 
     @BeforeEach
     void setUp() {
-        dataAccess = new MemoryDataAccess();
+        dataAccess = new SqlDataAccess();
         dataAccess.clear();
         userService = new UserService(dataAccess);
         gameService = new GameService(dataAccess);
@@ -48,6 +48,7 @@ public class GameServiceTests {
     public void createGame() {
         int gameId = gameService.createGame(existingUserAuth.authToken(), "exampleGame");
 
+        System.out.println(gameId);
         assertNotNull(gameId, "Didnt return Game ID");
         assertTrue(gameId > 0, "Result returned bad game ID");
     }

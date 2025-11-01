@@ -1,5 +1,6 @@
 package server;
 
+import dataaccess.SqlDataAccess;
 import exceptions.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -19,12 +20,12 @@ public class Server {
 
     private final Javalin javalin;
 
-    private MemoryDataAccess dataAccess;
+    private SqlDataAccess dataAccess;
     private UserService userService;
     private GameService gameService;
 
     public Server() {
-        dataAccess = new MemoryDataAccess();
+        dataAccess = new SqlDataAccess();
         userService = new UserService(dataAccess);
         gameService = new GameService(dataAccess);
 

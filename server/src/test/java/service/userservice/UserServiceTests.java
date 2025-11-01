@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("UserService Tests")
 public class UserServiceTests {
 
-    private MemoryDataAccess dataAccess;
+    private SqlDataAccess dataAccess;
     private UserService userService;
     private UserData testUser;
     private UserData existingUser;
@@ -23,7 +23,7 @@ public class UserServiceTests {
 
     @BeforeEach
     void setUp() {
-        dataAccess = new MemoryDataAccess();
+        dataAccess = new SqlDataAccess();
         dataAccess.clear();
         userService = new UserService(dataAccess);
 
@@ -86,6 +86,10 @@ public class UserServiceTests {
 
     @Test
     void loginValidUser() {
+
+
+        userService.logout(existingUserAuth.authToken());
+
 
         AuthData authData = userService.login(existingUser);
 

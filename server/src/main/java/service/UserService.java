@@ -1,6 +1,7 @@
 package service;
 
 
+import dataaccess.SqlDataAccess;
 import exceptions.*;
 import dataaccess.MemoryDataAccess;
 import model.*;
@@ -10,9 +11,9 @@ import java.util.UUID;
 
 public class UserService {
 
-    private final MemoryDataAccess dataAccess;
+    private final SqlDataAccess dataAccess;
 
-    public UserService(MemoryDataAccess dataAccess) {
+    public UserService(SqlDataAccess dataAccess) {
         this.dataAccess = dataAccess;
     }
 
