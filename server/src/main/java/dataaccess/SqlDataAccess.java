@@ -429,28 +429,24 @@ public class SqlDataAccess implements DataAccess {
 
     @Override
     public boolean gameIDExists(int gameID) {
-//        String sql = "";
-//
-//        try (Connection conn = DatabaseManager.getConnection();
-//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//
-//            pstmt.setString(1, );
-//
-//            int rowsAffected = pstmt.executeUpdate();
-//
-//            try (ResultSet rs = pstmt.executeQuery()) {
-//                if (rs.next()) {
-//
-//                    return;
-//                }
-//            }
-//
-//        } catch (SQLException e) {
-//            System.err.println("Error: " + e.getMessage());
-//            e.printStackTrace();
-//        } catch (DataAccessException e) {
-//            throw new RuntimeException(e);
-//        }
+        String sql = "SELECT EXISTS(SELECT 1 FROM games WHERE gameID = ? LIMIT 1)";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, gameID);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBoolean(1);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
         return false;
     }
 
@@ -463,7 +459,6 @@ public class SqlDataAccess implements DataAccess {
 //
 //            pstmt.setString(1, );
 //
-//            int rowsAffected = pstmt.executeUpdate();
 //
 //            try (ResultSet rs = pstmt.executeQuery()) {
 //                if (rs.next()) {
