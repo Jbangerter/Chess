@@ -12,7 +12,7 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.sql.*;
-import java.util.List;
+
 
 public class SqlDataAccess implements DataAccess {
 
@@ -52,13 +52,13 @@ public class SqlDataAccess implements DataAccess {
 
 
     @Override
-    public void clear() {
+    public void clear() throws DataAccessException {
         clearUsers();
         clearGames();
         clearAuthdata();
     }
 
-    public void clearUsers() {
+    public void clearUsers() throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection();
              Statement stmt = conn.createStatement()) {
 
@@ -66,18 +66,13 @@ public class SqlDataAccess implements DataAccess {
 
             stmt.executeUpdate(sql);
 
-            System.out.println("Table users truncated successfully.");
-
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Failed to truncate table users");
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to trunccate users", e);
         }
 
     }
 
-    public void clearGames() {
+    public void clearGames() throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection();
              Statement stmt = conn.createStatement()) {
 
@@ -85,18 +80,13 @@ public class SqlDataAccess implements DataAccess {
 
             stmt.executeUpdate(sql);
 
-            System.out.println("Table games truncated successfully.");
-
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Failed to truncate table games");
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to trunccate games", e);
         }
 
     }
 
-    public void clearAuthdata() {
+    public void clearAuthdata() throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection();
              Statement stmt = conn.createStatement()) {
 
@@ -104,20 +94,15 @@ public class SqlDataAccess implements DataAccess {
 
             stmt.executeUpdate(sql);
 
-            System.out.println("Table authdata truncated successfully.");
-
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Failed to truncate table authdata");
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to trunccate authdata", e);
         }
 
     }
 
 
     @Override
-    public void createUser(UserData user) {
+    public void createUser(UserData user) throws DataAccessException {
         String passwordHash = hashPassword(user.password());
 
         String sql = "INSERT INTO users (username, email, password_hash) VALUES (?,?,?)";
@@ -135,15 +120,12 @@ public class SqlDataAccess implements DataAccess {
             System.out.println("User added successfully. Rows affected: " + rowsAffected);
 
         } catch (SQLException e) {
-            System.err.println("Error adding user to database: " + e.getMessage());
-            e.printStackTrace();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to create user:" + user.username(), e);
         }
     }
 
     @Override
-    public UserData getUser(String userID) {
+    public UserData getUser(String userID) throws DataAccessException {
 
         String sql = "SELECT username, email, password_hash FROM users WHERE username = ?";
 
@@ -164,17 +146,14 @@ public class SqlDataAccess implements DataAccess {
             }
 
         } catch (SQLException e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to get user:" + userID, e);
         }
 
         return null;
     }
 
     @Override
-    public boolean userExists(String userID) {
+    public boolean userExists(String userID) throws DataAccessException {
         String sql = "SELECT EXISTS(SELECT 1 FROM users WHERE username = ? LIMIT 1)";
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -188,17 +167,14 @@ public class SqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to find user:" + userID, e);
         }
         return false;
 
     }
 
     @Override
-    public boolean validatePassword(UserData user) {
+    public boolean validatePassword(UserData user) throws DataAccessException {
         String sql = "SELECT password_hash FROM users WHERE username = ?";
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -218,38 +194,37 @@ public class SqlDataAccess implements DataAccess {
             }
 
         } catch (SQLException e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to validate password for user:" + user.username(), e);
         }
 
         return false;
     }
 
     @Override
-    public void addAuth(AuthData authData) {
-        String sql = "INSERT INTO authdata (username, authToken) VALUES (?,?)";
+    public void addAuth(AuthData authData) throws DataAccessException {
+        String sql = """
+                INSERT INTO authdata (username, authToken) VALUES (?,?)
+                 ON DUPLICATE KEY UPDATE
+                            authToken = VALUES(authToken),
+                            username = VALUES(username)
+                """;
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            // 3. Set the values for the placeholders
+
             pstmt.setString(1, authData.username());
             pstmt.setString(2, authData.authToken());
 
             pstmt.executeUpdate();
 
         } catch (SQLException e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to add authentication for:" + authData.username(), e);
         }
     }
 
     @Override
-    public boolean validateUserHasAuthdata(AuthData authData) {
+    public boolean validateUserHasAuthdata(AuthData authData) throws DataAccessException {
         String sql = "SELECT username, authToken FROM authdata WHERE authToken = ?";
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -273,17 +248,14 @@ public class SqlDataAccess implements DataAccess {
             }
 
         } catch (SQLException e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to validate user:" + authData.username(), e);
         }
 
         return false;
     }
 
     @Override
-    public AuthData getAuthdataFromAuthtoken(String authToken) {
+    public AuthData getAuthdataFromAuthtoken(String authToken) throws DataAccessException {
 //
         String sql = "SELECT username, authToken FROM authdata WHERE authToken = ?";
 
@@ -304,22 +276,19 @@ public class SqlDataAccess implements DataAccess {
             }
 
         } catch (SQLException e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to get Authdata:", e);
         }
 
         return null;
     }
 
     @Override
-    public boolean validateAuthToken(String authToken) {
+    public boolean validateAuthToken(String authToken) throws DataAccessException {
         return authTokenExists(authToken);
     }
 
     @Override
-    public boolean authTokenExists(String authToken) {
+    public boolean authTokenExists(String authToken) throws DataAccessException {
         String sql = "SELECT EXISTS(SELECT 1 FROM authdata WHERE authToken = ? LIMIT 1)";
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -333,16 +302,13 @@ public class SqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to get authdata:", e);
         }
         return false;
     }
 
     @Override
-    public void removeAuth(String authData) {
+    public void removeAuth(String authData) throws DataAccessException {
         String sql = "DELETE FROM authdata WHERE authToken = ?";
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -353,15 +319,12 @@ public class SqlDataAccess implements DataAccess {
             pstmt.executeUpdate();
 
         } catch (SQLException e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to delete authdata:", e);
         }
     }
 
     @Override
-    public void createGame(GameData game) {
+    public void createGame(GameData game) throws DataAccessException {
         Gson gson = new Gson();
         String sql = "INSERT INTO games (gameID, whiteUsername, blackUsername, gameName, gameState) VALUES (?,?,?,?,?)";
 
@@ -381,15 +344,12 @@ public class SqlDataAccess implements DataAccess {
             System.out.println("User added successfully. Rows affected: " + rowsAffected);
 
         } catch (SQLException e) {
-            System.err.println("Error adding user to database: " + e.getMessage());
-            e.printStackTrace();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to create game:" + game.gameName(), e);
         }
     }
 
     @Override
-    public void updateGame(GameData game) {
+    public void updateGame(GameData game) throws DataAccessException {
         String sql = "UPDATE games SET whiteUsername = ?, blackUsername = ? ,gameName = ? ,gameState = ? WHERE gameID = ?";
 
         Gson gson = new Gson();
@@ -408,15 +368,12 @@ public class SqlDataAccess implements DataAccess {
             pstmt.executeUpdate();
 
         } catch (SQLException e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to update game:" + game.gameName(), e);
         }
     }
 
     @Override
-    public int numGames() {
+    public int numGames() throws DataAccessException {
         String sql = "SELECT COUNT(*) AS total_count FROM games";
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -429,16 +386,13 @@ public class SqlDataAccess implements DataAccess {
             }
 
         } catch (SQLException e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to count games", e);
         }
         return -1;
     }
 
     @Override
-    public boolean gameIDExists(int gameID) {
+    public boolean gameIDExists(int gameID) throws DataAccessException {
         String sql = "SELECT EXISTS(SELECT 1 FROM games WHERE gameID = ? LIMIT 1)";
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -452,16 +406,13 @@ public class SqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to get game:" + gameID, e);
         }
         return false;
     }
 
     @Override
-    public GameData getGame(int gameID) {
+    public GameData getGame(int gameID) throws DataAccessException {
 
         String sql = "SELECT gameID, whiteUsername , blackUsername,gameName,gameState FROM games WHERE gameID = ?";
         Gson gson = new Gson();
@@ -486,17 +437,14 @@ public class SqlDataAccess implements DataAccess {
             }
 
         } catch (SQLException e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to get game:" + gameID, e);
         }
 
         return null;
     }
 
     @Override
-    public Collection<GameData> listGames() {
+    public Collection<GameData> listGames() throws DataAccessException {
 
         String sql = "SELECT gameID, whiteUsername , blackUsername,gameName,gameState FROM games";
         Gson gson = new Gson();
@@ -522,13 +470,8 @@ public class SqlDataAccess implements DataAccess {
 
             return gameList;
         } catch (SQLException e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to list Games:", e);
         }
-
-        return null;
 
     }
 
