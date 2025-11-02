@@ -6,16 +6,13 @@ import model.GameData;
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
 
-
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.sql.*;
 
-
 public class SqlDataAccess implements DataAccess {
-
 
     private final String[] createStatements = {
             """
@@ -49,7 +46,6 @@ public class SqlDataAccess implements DataAccess {
     public SqlDataAccess() {
         configureDatabase();
     }
-
 
     @Override
     public void clear() throws DataAccessException {
@@ -99,7 +95,6 @@ public class SqlDataAccess implements DataAccess {
         }
 
     }
-
 
     @Override
     public void createUser(UserData user) throws DataAccessException {
@@ -256,7 +251,7 @@ public class SqlDataAccess implements DataAccess {
 
     @Override
     public AuthData getAuthdataFromAuthtoken(String authToken) throws DataAccessException {
-//
+
         String sql = "SELECT username, authToken FROM authdata WHERE authToken = ?";
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -331,13 +326,11 @@ public class SqlDataAccess implements DataAccess {
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            // 3. Set the values for the placeholders
             pstmt.setInt(1, game.gameID());
             pstmt.setString(2, game.whiteUsername());
             pstmt.setString(3, game.blackUsername());
             pstmt.setString(4, game.gameName());
             pstmt.setString(5, gson.toJson(game.game()));
-
 
             int rowsAffected = pstmt.executeUpdate();
 
@@ -356,7 +349,6 @@ public class SqlDataAccess implements DataAccess {
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
 
             pstmt.setString(1, game.whiteUsername());
             pstmt.setString(2, game.blackUsername());
@@ -479,8 +471,8 @@ public class SqlDataAccess implements DataAccess {
         return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 
-    private boolean verifyHash(String hashedPassword, String ClearTextPassword) {
-        return BCrypt.checkpw(ClearTextPassword, hashedPassword);
+    private boolean verifyHash(String hashedPassword, String clearTextPassword) {
+        return BCrypt.checkpw(clearTextPassword, hashedPassword);
     }
 
     private void configureDatabase() throws RuntimeException {
