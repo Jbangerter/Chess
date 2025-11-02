@@ -22,7 +22,7 @@ public class UserServiceTests {
 
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws DataAccessException {
         dataAccess = new SqlDataAccess();
         dataAccess.clear();
         userService = new UserService(dataAccess);
@@ -37,7 +37,7 @@ public class UserServiceTests {
     //REGISTER TESTS
 
     @Test
-    void registerNewValidUser() {
+    void registerNewValidUser() throws DataAccessException {
 
         AuthData authData = userService.register(testUser);
 
@@ -73,7 +73,7 @@ public class UserServiceTests {
 
 
     @Test
-    void registerExistingUserThrowsAlreadyTakenException() {
+    void registerExistingUserThrowsAlreadyTakenException() throws DataAccessException {
         userService.register(testUser);
 
         AlreadyTakenException exception = assertThrows(AlreadyTakenException.class, () -> userService.register(testUser));
@@ -85,7 +85,7 @@ public class UserServiceTests {
     //LOGIN TESTS
 
     @Test
-    void loginValidUser() {
+    void loginValidUser() throws DataAccessException {
 
 
         userService.logout(existingUserAuth.authToken());
@@ -135,7 +135,7 @@ public class UserServiceTests {
     //LOGOUT TESTS
 
     @Test
-    public void logoutSuccess() {
+    public void logoutSuccess() throws DataAccessException {
 
         userService.logout(existingUserAuth.authToken());
 

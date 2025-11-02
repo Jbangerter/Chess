@@ -1,6 +1,7 @@
 package service;
 
 
+import dataaccess.DataAccessException;
 import dataaccess.SqlDataAccess;
 import exceptions.*;
 import dataaccess.MemoryDataAccess;
@@ -17,7 +18,7 @@ public class UserService {
         this.dataAccess = dataAccess;
     }
 
-    public AuthData register(UserData user) {
+    public AuthData register(UserData user) throws DataAccessException {
         if (user.username() == null || user.email() == null || user.password() == null) {
             throw new BadRequestException("Error: bad request");
         }
@@ -34,7 +35,7 @@ public class UserService {
     }
 
 
-    public AuthData login(UserData user) {
+    public AuthData login(UserData user) throws DataAccessException {
         if (user.username() == null || user.password() == null) {
             throw new BadRequestException("Error: bad request");
         }
@@ -52,7 +53,7 @@ public class UserService {
     }
 
 
-    public void logout(String authData) {
+    public void logout(String authData) throws DataAccessException {
         //make sure the User exits
         if (!dataAccess.authTokenExists(authData)) {
             throw new UnauthorizedException("Error: unauthorized");

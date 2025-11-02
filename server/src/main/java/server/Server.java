@@ -1,5 +1,6 @@
 package server;
 
+import dataaccess.DataAccessException;
 import dataaccess.SqlDataAccess;
 import exceptions.*;
 import com.google.gson.Gson;
@@ -49,6 +50,10 @@ public class Server {
         javalin.exception(AlreadyTakenException.class, (e, ctx) -> {
             ctx.status(403).json(new ErrorResponse(e.getMessage())); // Forbidden status
         });
+        javalin.exception(DataAccessException.class, (e, ctx) -> {
+            System.err.println("Database Error occurred: " + e.getMessage());
+            ctx.status(500).json(new ErrorResponse("Internal server error: " + e.getMessage()));
+        });
 
 
         //JAVALIN EVENTS
@@ -61,11 +66,11 @@ public class Server {
         javalin.get("/game", this::listGames);
     }
 
-    private void deleteAll(@NotNull Context ctx) {
+    private void deleteAll(@NotNull Context ctx) throws DataAccessException {
         dataAccess.clear();
     }
 
-    private void register(@NotNull Context ctx) {
+    private void register(@NotNull Context ctx) throws DataAccessException {
 
         var serializer = new Gson();
         String reqJson = ctx.body();
@@ -75,7 +80,7 @@ public class Server {
         ctx.status(200).json(response);
     }
 
-    private void login(@NotNull Context ctx) {
+    private void login(@NotNull Context ctx) throws DataAccessException {
 
         var serializer = new Gson();
         String reqJson = ctx.body();
@@ -85,7 +90,7 @@ public class Server {
         ctx.status(200).json(response);
     }
 
-    private void logout(@NotNull Context ctx) {
+    private void logout(@NotNull Context ctx) throws DataAccessException {
 
         var req = ctx.header("Authorization");
 
@@ -93,7 +98,7 @@ public class Server {
         ctx.status(200).json("{}");
     }
 
-    private void createGame(@NotNull Context ctx) {
+    private void createGame(@NotNull Context ctx) throws DataAccessException {
 
         var authToken = ctx.header("Authorization");
 
@@ -111,7 +116,7 @@ public class Server {
 
     }
 
-    private void joinGame(@NotNull Context ctx) {
+    private void joinGame(@NotNull Context ctx) throws DataAccessException {
 
         var authToken = ctx.header("Authorization");
 
@@ -124,7 +129,7 @@ public class Server {
         ctx.status(200).json("{}");
     }
 
-    private void listGames(@NotNull Context ctx) {
+    private void listGames(@NotNull Context ctx) throws DataAccessException {
 
         var authToken = ctx.header("Authorization");
 

@@ -31,7 +31,7 @@ public class GameServiceTests {
 
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws DataAccessException {
         dataAccess = new SqlDataAccess();
         dataAccess.clear();
         userService = new UserService(dataAccess);
@@ -45,7 +45,7 @@ public class GameServiceTests {
     }
 
     @Test
-    public void createGame() {
+    public void createGame() throws DataAccessException {
         int gameId = gameService.createGame(existingUserAuth.authToken(), "exampleGame");
 
         System.out.println(gameId);
@@ -67,7 +67,7 @@ public class GameServiceTests {
     }
 
     @Test
-    public void joinGameSuccess() {
+    public void joinGameSuccess() throws DataAccessException {
         int gameId = gameService.createGame(existingUserAuth.authToken(), "exampleGame");
 
 
@@ -81,7 +81,7 @@ public class GameServiceTests {
     }
 
     @Test
-    public void unauthorizedJoinGame() {
+    public void unauthorizedJoinGame() throws DataAccessException {
         int gameId = gameService.createGame(existingUserAuth.authToken(), "exampleGame");
 
         UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> gameService.joinGame("asdf", BLACK, gameId));
@@ -100,14 +100,14 @@ public class GameServiceTests {
     }
 
     @Test
-    public void listNoGames() {
+    public void listNoGames() throws DataAccessException {
         Collection<GameData> gameList = dataAccess.listGames();
 
         assertEquals(0, gameList.size());
     }
 
     @Test
-    public void listGames() {
+    public void listGames() throws DataAccessException {
         gameService.createGame(existingUserAuth.authToken(), "exampleGame1");
         gameService.createGame(existingUserAuth.authToken(), "exampleGame2");
         gameService.createGame(existingUserAuth.authToken(), "exampleGame3");

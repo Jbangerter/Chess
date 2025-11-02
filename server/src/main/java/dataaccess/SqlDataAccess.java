@@ -30,7 +30,7 @@ public class SqlDataAccess implements DataAccess {
             """
             CREATE TABLE IF NOT EXISTS authdata (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(255) NOT NULL UNIQUE,
+                username VARCHAR(255) NOT NULL,
                 authToken VARCHAR(255) NOT NULL UNIQUE
             )
             """,

@@ -1,5 +1,6 @@
 package service;
 
+import dataaccess.DataAccessException;
 import dataaccess.SqlDataAccess;
 import exceptions.*;
 import chess.ChessGame;
@@ -20,7 +21,7 @@ public class GameService {
     }
 
 
-    public GameListData listGames(String authToken) {
+    public GameListData listGames(String authToken) throws DataAccessException {
         if (!dataAccess.validateAuthToken(authToken)) {
             throw new UnauthorizedException("Error: unauthorized");
         }
@@ -36,7 +37,7 @@ public class GameService {
         return new GameListData(gameList);
     }
 
-    public int createGame(String authToken, String gameName) {
+    public int createGame(String authToken, String gameName) throws DataAccessException {
         if (!dataAccess.validateAuthToken(authToken)) {
             throw new UnauthorizedException("Error: unauthorized");
         }
@@ -52,7 +53,7 @@ public class GameService {
     }
 
 
-    public void joinGame(String authToken, ChessGame.TeamColor playerColor, int gameID) {
+    public void joinGame(String authToken, ChessGame.TeamColor playerColor, int gameID) throws DataAccessException {
         if (!dataAccess.validateAuthToken(authToken)) {
             throw new UnauthorizedException("Error: unauthorized");
         }

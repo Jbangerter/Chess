@@ -19,12 +19,12 @@ public class DataAccessTest {
     }
 
     @BeforeEach
-    public void setup() {
+    public void setup() throws DataAccessException {
         dataAccess.clear();
     }
 
     @Test
-    void createUser() {
+    void createUser() throws DataAccessException {
         dataAccess.createUser(testUser);
         UserData retrievedUser = dataAccess.getUser(testUser.username());
         Assertions.assertNotNull(retrievedUser);
@@ -35,7 +35,7 @@ public class DataAccessTest {
     }
 
     @Test
-    void clear() {
+    void clear() throws DataAccessException {
         dataAccess.createUser(testUser);
         dataAccess.clear();
         UserData retrievedUser = dataAccess.getUser(testUser.username());
@@ -44,27 +44,27 @@ public class DataAccessTest {
     }
 
     @Test
-    void getUser() {
+    void getUser() throws DataAccessException {
         dataAccess.createUser(testUser);
         UserData retrievedUser = dataAccess.getUser(testUser.username());
         Assertions.assertNotNull(retrievedUser);
     }
 
     @Test
-    void getUserFakeUser() {
+    void getUserFakeUser() throws DataAccessException {
         UserData retrievedUser = dataAccess.getUser("nonExistentUser");
         Assertions.assertNull(retrievedUser);
     }
 
     @Test
-    void userExists() {
+    void userExists() throws DataAccessException {
         dataAccess.createUser(testUser);
         boolean exists = dataAccess.userExists(testUser.username());
         Assertions.assertTrue(exists);
     }
 
     @Test
-    void userDoesNotExist() {
+    void userDoesNotExist() throws DataAccessException {
         boolean exists = dataAccess.userExists("nonExistentUser");
         Assertions.assertFalse(exists);
     }
