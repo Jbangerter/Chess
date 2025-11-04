@@ -1,9 +1,8 @@
 package dataaccess;
 
-import com.mysql.cj.util.DataTypeUtil;
 import model.AuthData;
-import model.GameData;
 import model.UserData;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,9 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import java.sql.*;
 
-import java.util.Collection;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DataAccessTest {
 
@@ -71,7 +67,7 @@ public class DataAccessTest {
     void userExists() throws DataAccessException {
         dataAccess.createUser(testUser);
         boolean exists = dataAccess.userExists(testUser.username());
-        assertTrue(exists);
+        Assertions.assertTrue(exists);
     }
 
     @Test
@@ -87,21 +83,21 @@ public class DataAccessTest {
     void userHasPassword() throws DataAccessException {
         dataAccess.createUser(testUser);
 
-        assertTrue(dataAccess.validatePassword(testUser), "Error: function should return true if a given user has a valid password in DB");
+        Assertions.assertTrue(dataAccess.validatePassword(testUser));
 
     }
 
     @Test
     void userHasInvalidPassword() throws DataAccessException {
         dataAccess.createUser(testUser);
-        Assertions.assertFalse(dataAccess.validatePassword(new UserData(testUser.username(), testUser.email(), "fakePassword")), "Error: function should return false if a given wrong password for user that has a valid data in DB");
+        Assertions.assertFalse(dataAccess.validatePassword(new UserData(testUser.username(), testUser.email(), "fakePassword")));
     }
 
 
     @Test
     void invalidUserHasValidPassword() throws DataAccessException {
         dataAccess.createUser(testUser);
-        Assertions.assertFalse(dataAccess.validatePassword(new UserData("Fake User", testUser.email(), testUser.password())), "Error: function should return false if a given password for user that does not exist");
+        Assertions.assertFalse(dataAccess.validatePassword(new UserData("Fake User", testUser.email(), testUser.password())));
     }
 
     //Add Authdata
