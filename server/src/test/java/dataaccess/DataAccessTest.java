@@ -1,6 +1,8 @@
 package dataaccess;
 
+import chess.ChessGame;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 
 import org.junit.jupiter.api.Assertions;
@@ -16,6 +18,7 @@ public class DataAccessTest {
     private static SqlDataAccess dataAccess;
     private static UserData testUser;
     private static AuthData testAuth;
+    private static GameData testgame;
 
     @BeforeAll
     public static void startDB() {
@@ -23,6 +26,7 @@ public class DataAccessTest {
 
         testUser = new UserData("username", "email", "passsword");
         testAuth = new AuthData("username", "authToken");
+        testgame = new GameData(1, null, null, "test Game", new ChessGame());
     }
 
     @BeforeEach
@@ -194,7 +198,7 @@ public class DataAccessTest {
     }
 
     @Test
-    void AuthTokenDoesNotExist() throws DataAccessException {
+    void authTokenDoesNotExist() throws DataAccessException {
         dataAccess.addAuth(testAuth);
         Assertions.assertFalse(dataAccess.authTokenExists("FakeAuthtoken"));
     }
@@ -216,13 +220,26 @@ public class DataAccessTest {
         Assertions.assertTrue(dataAccess.authTokenExists(testAuth.authToken()));
     }
 
-//
+    //
 //
 //    void createGame(GameData game) throws DataAccessException;
 //
 //    void updateGame(GameData game) throws DataAccessException;
 //
-//    int numGames() throws DataAccessException;
+    //numGames()
+    @Test
+    void numGames() throws DataAccessException {
+        dataAccess.addAuth(testAuth);
+        Assertions.assertTrue(dataAccess.authTokenExists(testAuth.authToken()));
+
+    }
+
+    @Test
+    void numGamesNoGame() throws DataAccessException {
+        dataAccess.addAuth(testAuth);
+        Assertions.assertFalse(dataAccess.authTokenExists("FakeAuthtoken"));
+    }
+
 //
 //    boolean gameIDExists(int gameID) throws DataAccessException;
 //
