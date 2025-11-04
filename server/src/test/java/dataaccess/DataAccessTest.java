@@ -137,15 +137,85 @@ public class DataAccessTest {
         }
     }
 
-//    boolean validateUserHasAuthdata(AuthData authData) throws DataAccessException;
-//
-//    AuthData getAuthdataFromAuthtoken(String authToken) throws DataAccessException;
-//
-//    boolean validateAuthToken(String authToken) throws DataAccessException;
-//
-//    boolean authTokenExists(String authToken) throws DataAccessException;
-//
-//    void removeAuth(String authData) throws DataAccessException;
+    //validateUserHasAuthdata
+
+    @Test
+    void userHasAuthdata() throws DataAccessException {
+        dataAccess.addAuth(testAuth);
+        Assertions.assertTrue(dataAccess.validateUserHasAuthdata(testAuth));
+
+    }
+
+    @Test
+    void userHasInvalidAuthdata() throws DataAccessException {
+        dataAccess.addAuth(testAuth);
+        Assertions.assertFalse(dataAccess.validateUserHasAuthdata(new AuthData("fake User", testAuth.authToken())));
+    }
+
+
+    //getAuthdataFromAuthtoken
+    @Test
+    void retreiveValidAuth() throws DataAccessException {
+        dataAccess.addAuth(testAuth);
+        Assertions.assertEquals(dataAccess.getAuthdataFromAuthtoken(testAuth.authToken()), testAuth);
+    }
+
+    @Test
+    void retreiveInvalidAuth() throws DataAccessException {
+        dataAccess.addAuth(testAuth);
+        Assertions.assertNull(dataAccess.getAuthdataFromAuthtoken("FakeAuthtoken"));
+
+    }
+
+    //validateAuthToken
+
+
+    @Test
+    void validAuthToken() throws DataAccessException {
+        dataAccess.addAuth(testAuth);
+        Assertions.assertTrue(dataAccess.validateAuthToken(testAuth.authToken()));
+
+    }
+
+    @Test
+    void invalidAuthToken() throws DataAccessException {
+        dataAccess.addAuth(testAuth);
+        Assertions.assertFalse(dataAccess.validateAuthToken("FakeAuthtoken"));
+    }
+
+
+//    authTokenExists
+
+    @Test
+    void authTokenExists() throws DataAccessException {
+        dataAccess.addAuth(testAuth);
+        Assertions.assertTrue(dataAccess.authTokenExists(testAuth.authToken()));
+
+    }
+
+    @Test
+    void AuthTokenDoesNotExist() throws DataAccessException {
+        dataAccess.addAuth(testAuth);
+        Assertions.assertFalse(dataAccess.authTokenExists("FakeAuthtoken"));
+    }
+
+//   removeAuth
+
+
+    @Test
+    void removeAuth() throws DataAccessException {
+        dataAccess.addAuth(testAuth);
+        dataAccess.removeAuth(testAuth.authToken());
+        Assertions.assertFalse(dataAccess.authTokenExists(testAuth.authToken()));
+
+    }
+
+    @Test
+    void removeAuthThatDoesntExist() throws DataAccessException {
+        dataAccess.addAuth(testAuth);
+        Assertions.assertTrue(dataAccess.authTokenExists(testAuth.authToken()));
+    }
+
 //
 //
 //    void createGame(GameData game) throws DataAccessException;
