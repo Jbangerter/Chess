@@ -229,15 +229,16 @@ public class DataAccessTest {
     //numGames()
     @Test
     void numGames() throws DataAccessException {
-        dataAccess.addAuth(testAuth);
-        Assertions.assertTrue(dataAccess.authTokenExists(testAuth.authToken()));
+        Assertions.assertTrue(dataAccess.numGames() == 0);
+
+        dataAccess.createGame(testgame);
+        Assertions.assertTrue(dataAccess.numGames() > 0);
 
     }
 
     @Test
     void numGamesNoGame() throws DataAccessException {
-        dataAccess.addAuth(testAuth);
-        Assertions.assertFalse(dataAccess.authTokenExists("FakeAuthtoken"));
+        Assertions.assertFalse(dataAccess.numGames() > 0);
     }
 
 //
