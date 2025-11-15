@@ -4,16 +4,19 @@ import chess.ChessBoard;
 import chess.ChessGame;
 import serverfacade.ServerFacade;
 
-import java.time.chrono.Era;
 import java.util.Arrays;
 import java.util.Scanner;
 
-import static ui.EscapeSequences.*;
+import static chess.EscapeSequences.*;
 
 public class ChessClient {
     private final ServerFacade server;
     private String textColorPrimary = SET_TEXT_COLOR_BLUE;
     private String textColorSecoundary = SET_TEXT_COLOR_LIGHT_GREY;
+
+    private String boardEdgeColor = SET_BG_COLOR_RED;
+    private String boardWhiteSquares = SET_BG_COLOR_WHITE;
+    private String boardBlackSquare = SET_BG_COLOR_BLACK;
 
     private String user = "";
     private ChessGame.TeamColor userColor = null;
@@ -21,6 +24,7 @@ public class ChessClient {
 
 
     private boolean isLoggedIn = false;
+    private boolean isInGame = false;
 
 
     private String[] preLogginHelp = {
@@ -133,15 +137,18 @@ public class ChessClient {
     }
 
     private String joinGame(String[] inputs) {
+        isInGame = true;
         userColor = ChessGame.TeamColor.valueOf(inputs[1].toUpperCase());
         return (user + " joined game: " + inputs[0] + " as " + userColor);
     }
 
     private String observeGame(String[] inputs) {
+        isInGame = true;
         return (user + " observes game: " + inputs[0]);
     }
 
     private String logout() {
+        isInGame = false;
         var oldUser = user;
         isLoggedIn = false;
         user = null;
@@ -152,16 +159,16 @@ public class ChessClient {
         return "";
     }
 
-    private String screenFormater(String contents) {
+    private String screenFormater(String message) {
         String board = "";
-        if (gameBoard != null) {
+        if (gameBoard != null && isInGame == true) {
             board = ERASE_SCREEN + stringBoard(gameBoard) + "\n\n";
         }
 
 
         String contentsCheckedForNull = "";
-        if (contents != null && !contents.isEmpty()) {
-            contentsCheckedForNull = contents + "\n\n";
+        if (message != null && !message.isEmpty()) {
+            contentsCheckedForNull = message + "\n\n";
         }
 
 
@@ -182,14 +189,43 @@ public class ChessClient {
 
     private String stringBoard(ChessBoard board) {
         var boardArray = board.boardAsArray();
+        String stringBoard[][] = new String[10][10];
+//
+// Corrected to use String arrays for padding
+        String[] columnLabels = {"   ", " a ", " b ", " c ", " d ", " e ", " f ", " g ", " h ", "   "};
+        String[] rowLabels = {"   ", " 1 ", " 2 ", " 3 ", " 4 ", " 5 ", " 6 ", " 7 ", " 8 ", "   "};
 
-        for (char[] col : boardArray) {
-            for (char piece : col) {
-                System.out.print(piece + "  ");
+
+//        for (String[] col : boardArray) {
+//            for (String piece : col) {
+//                System.out.print(piece);
+//            }
+//            System.out.println();
+//        }
+
+        for (int row = 0; row < 10; row++) {
+            for (int col = 0; col < 10; col++) {
+                if (row == 0 || row == 9) {
+                    stringBoard[row][col] = boardEdgeColor + columnLabels[col] + RESET_BG_COLOR;
+                }
+                if (col == 0 || col == 9) {
+                    stringBoard[row][col] = boardEdgeColor + rowLabels[row] + RESET_BG_COLOR;
+                }
+//                if((row + col) % 2 == 0){
+//
+//                }else{
+//
+//                }
+            }
+        }
+
+        for (int row = 0; row < 10; row++) {
+            for (int col = 0; col < 10; col++) {
+
+                System.out.print(stringBoard[row][col]);
             }
             System.out.println();
         }
-
         return "Pretend Im a Chess Board";
     }
 

@@ -2,6 +2,8 @@ package chess;
 
 import java.util.*;
 
+import static chess.EscapeSequences.*;
+
 /**
  * Represents a single chess piece
  * <p>
@@ -15,35 +17,39 @@ public class ChessPiece {
     private ChessBoard board;
     private ChessPosition myPosition;
 
+    private String BlackColor = SET_TEXT_COLOR_WHITE;
+    private String WhiteColor = SET_TEXT_COLOR_WHITE;
+
     public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
     }
 
-    public char getPieceSymbol() {
+
+    public String getPieceSymbol() {
         if (pieceColor == ChessGame.TeamColor.WHITE) {
             return switch (type) {
-                case KING -> '♔';
-                case QUEEN -> '♕';
-                case BISHOP -> '♗';
-                case KNIGHT -> '♘';
-                case ROOK -> '♖';
-                case PAWN -> '♙';
+                case KING -> SET_TEXT_BOLD + WhiteColor + " ♔ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case QUEEN -> SET_TEXT_BOLD + WhiteColor + " ♕ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case BISHOP -> SET_TEXT_BOLD + WhiteColor + " ♗ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case KNIGHT -> SET_TEXT_BOLD + WhiteColor + " ♘ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case ROOK -> SET_TEXT_BOLD + WhiteColor + " ♖ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case PAWN -> SET_TEXT_BOLD + WhiteColor + " ♙ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
                 default -> throw new IllegalArgumentException("Unknown PieceType: " + type);
             };
         } else {
             return switch (type) {
-                case KING -> '♚';
-                case QUEEN -> '♛';
-                case BISHOP -> '♝';
-                case KNIGHT -> '♞';
-                case ROOK -> '♜';
-                case PAWN -> '♟';
+                case KING -> SET_TEXT_BOLD + BlackColor + " ♚ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case QUEEN -> SET_TEXT_BOLD + BlackColor + " ♛ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case BISHOP -> SET_TEXT_BOLD + BlackColor + " ♝ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case KNIGHT -> SET_TEXT_BOLD + BlackColor + " ♞ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case ROOK -> SET_TEXT_BOLD + BlackColor + " ♜ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case PAWN -> SET_TEXT_BOLD + BlackColor + " ♟ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
                 default -> throw new IllegalArgumentException("Unknown PieceType: " + type);
             };
         }
-
     }
+
 
     /**
      * The various different chess piece options

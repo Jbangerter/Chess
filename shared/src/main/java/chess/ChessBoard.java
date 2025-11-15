@@ -104,8 +104,8 @@ public class ChessBoard {
         return board;
     }
 
-    public char[][] boardAsArray() {
-        char[][] board = new char[8][8];
+    public String[][] boardAsArray() {
+        String[][] board = new String[8][8];
 
         for (int row = 0; row < squares.length; row++) {
             for (int col = 0; col < squares[row].length; col++) {
@@ -113,7 +113,7 @@ public class ChessBoard {
                 if (piece != null) {
                     board[row][col] = squares[row][col].getPieceSymbol();
                 } else {
-                    board[row][col] = ' ';
+                    board[row][col] = " ";
                 }
             }
         }
