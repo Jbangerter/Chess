@@ -17,7 +17,8 @@ public class ChessClient {
 
     private String user = "";
     private ChessGame.TeamColor userColor = null;
-    private ChessBoard gameBoard = null;
+    private ChessBoard gameBoard = new ChessBoard();
+
 
     private boolean isLoggedIn = false;
 
@@ -45,6 +46,7 @@ public class ChessClient {
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
+        gameBoard.resetBoard();
 
     }
 
@@ -179,6 +181,15 @@ public class ChessClient {
     }
 
     private String stringBoard(ChessBoard board) {
+        var boardArray = board.boardAsArray();
+
+        for (char[] col : boardArray) {
+            for (char piece : col) {
+                System.out.print(piece + "  ");
+            }
+            System.out.println();
+        }
+
         return "Pretend Im a Chess Board";
     }
 

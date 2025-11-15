@@ -20,6 +20,31 @@ public class ChessPiece {
         this.type = type;
     }
 
+    public char getPieceSymbol() {
+        if (pieceColor == ChessGame.TeamColor.WHITE) {
+            return switch (type) {
+                case KING -> '♔';
+                case QUEEN -> '♕';
+                case BISHOP -> '♗';
+                case KNIGHT -> '♘';
+                case ROOK -> '♖';
+                case PAWN -> '♙';
+                default -> throw new IllegalArgumentException("Unknown PieceType: " + type);
+            };
+        } else {
+            return switch (type) {
+                case KING -> '♚';
+                case QUEEN -> '♛';
+                case BISHOP -> '♝';
+                case KNIGHT -> '♞';
+                case ROOK -> '♜';
+                case PAWN -> '♟';
+                default -> throw new IllegalArgumentException("Unknown PieceType: " + type);
+            };
+        }
+
+    }
+
     /**
      * The various different chess piece options
      */

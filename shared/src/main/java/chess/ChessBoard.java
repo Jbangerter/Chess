@@ -104,6 +104,22 @@ public class ChessBoard {
         return board;
     }
 
+    public char[][] boardAsArray() {
+        char[][] board = new char[8][8];
+
+        for (int row = 0; row < squares.length; row++) {
+            for (int col = 0; col < squares[row].length; col++) {
+                ChessPiece piece = squares[row][col];
+                if (piece != null) {
+                    board[row][col] = squares[row][col].getPieceSymbol();
+                } else {
+                    board[row][col] = ' ';
+                }
+            }
+        }
+        return board;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
