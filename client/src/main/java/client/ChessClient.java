@@ -234,13 +234,14 @@ public class ChessClient {
             int r2 = N - 1 - i;
             int c2 = N - 1 - j;
 
-            swap(board, i, j, r2, c2);
+            flip(board, i, j, r2, c2);
         }
     }
 
-    private static void swap(String[][] board, int r1, int c1, int r2, int c2) {
+    private static void flip(String[][] board, int r1, int c1, int r2, int c2) {
         String temp = board[r1][c1];
         board[r1][c1] = board[r2][c2];
         board[r2][c2] = temp;
+
     }
 }
