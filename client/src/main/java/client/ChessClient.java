@@ -4,6 +4,7 @@ import chess.ChessBoard;
 import chess.ChessGame;
 import serverfacade.ServerFacade;
 
+import java.time.chrono.Era;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -11,8 +12,8 @@ import static ui.EscapeSequences.*;
 
 public class ChessClient {
     private final ServerFacade server;
-    private String menuTextColorPrimary = SET_TEXT_COLOR_BLUE;
-    private String menuTextColorSecoundary = SET_TEXT_COLOR_LIGHT_GREY;
+    private String textColorPrimary = SET_TEXT_COLOR_BLUE;
+    private String textColorSecoundary = SET_TEXT_COLOR_LIGHT_GREY;
 
     private String user = "";
     private ChessGame.TeamColor userColor = null;
@@ -22,23 +23,23 @@ public class ChessClient {
 
 
     private String[] preLogginHelp = {
-            menuTextColorPrimary + "Login <USERNAME> <PASSWORD>" + menuTextColorSecoundary + " - Login existing user",
-            menuTextColorPrimary + "Register <USERNAME> <EMAIL> <PASSWORD>" + menuTextColorSecoundary + " - Create new user",
-            menuTextColorPrimary + "Help" + menuTextColorSecoundary + " - Display this menu",
-            menuTextColorPrimary + "Quit" + menuTextColorSecoundary + " - Quit Chess"
+            textColorPrimary + "Login <USERNAME> <PASSWORD>" + RESET_TEXT_COLOR + " - Login existing user",
+            textColorPrimary + "Register <USERNAME> <EMAIL> <PASSWORD>" + RESET_TEXT_COLOR + " - Create new user",
+            textColorPrimary + "Help" + RESET_TEXT_COLOR + " - Display this menu",
+            textColorPrimary + "Quit" + RESET_TEXT_COLOR + " - Quit Chess"
 
     };
 
     private String[] postLogginHelp = {
-            menuTextColorPrimary + "Create <NAME>" + menuTextColorSecoundary + " - Create Game",
-            menuTextColorPrimary + "List" + menuTextColorSecoundary + " - List availible games",
+            textColorPrimary + "Create <NAME>" + RESET_TEXT_COLOR + " - Create Game",
+            textColorPrimary + "List" + RESET_TEXT_COLOR + " - List availible games",
 
-            menuTextColorPrimary + "Join <ID> <WHITE|BLACK>" + menuTextColorSecoundary + " - Join chosen game",
-            menuTextColorPrimary + "Observe <ID>" + menuTextColorSecoundary + " - Observe chosen game",
+            textColorPrimary + "Join <ID> <WHITE|BLACK>" + RESET_TEXT_COLOR + " - Join chosen game",
+            textColorPrimary + "Observe <ID>" + RESET_TEXT_COLOR + " - Observe chosen game",
 
-            menuTextColorPrimary + "Logout" + menuTextColorSecoundary + " - Logout",
-            menuTextColorPrimary + "Help" + menuTextColorSecoundary + " - Display this menu",
-            menuTextColorPrimary + "Quit" + menuTextColorSecoundary + " - Quit Chess"
+            textColorPrimary + "Logout" + RESET_TEXT_COLOR + " - Logout",
+            textColorPrimary + "Help" + RESET_TEXT_COLOR + " - Display this menu",
+            textColorPrimary + "Quit" + RESET_TEXT_COLOR + " - Quit Chess"
 
     };
 
@@ -49,7 +50,7 @@ public class ChessClient {
 
     public void run() {
         System.out.println("Welcome to 240 Chess\nSign in to star or type help for help.");
-        //hprintMenu(preLogginHelp);
+        System.out.print(screenFormater());
 
         Scanner scanner = new Scanner(System.in);
         String result = "";
@@ -59,23 +60,13 @@ public class ChessClient {
 
             try {
                 result = evaluate(input);
-                System.out.print(result);
+                System.out.print(screenFormater(result));
             } catch (Throwable e) {
                 var msg = e.toString();
                 System.out.print(msg);
             }
         }
         System.out.println("Exiting...");
-    }
-
-    private void printScreen(String[] entries) {
-        if (gameBoard != null) {
-            printBoard(gameBoard);
-        }
-
-        for (String entry : entries) {
-            System.out.println(entry);
-        }
     }
 
     private String stringMenu(String[] entries) {
@@ -117,11 +108,22 @@ public class ChessClient {
         };
     }
 
+    public String login(String... inputs) {
+        isLoggedIn = true;
+        user = inputs[0];
+        return (inputs[0] + " logged in with " + inputs[1]);
+
+    }
+
     private String register(String[] inputs) {
+        isLoggedIn = true;
+        user = inputs[0];
+        return (inputs[0] + " registered with " + inputs[1]);
+
     }
 
     private String createGame(String[] inputs) {
-
+        return ("Created game: " + inputs[0]);
     }
 
     private String listGames() {
@@ -130,30 +132,54 @@ public class ChessClient {
 
     private String joinGame(String[] inputs) {
         userColor = ChessGame.TeamColor.valueOf(inputs[1].toUpperCase());
-        return (user + "joined game: " + inputs[0] + " as " + userColor);
+        return (user + " joined game: " + inputs[0] + " as " + userColor);
     }
 
     private String observeGame(String[] inputs) {
-
+        return (user + " observes game: " + inputs[0]);
     }
 
     private String logout() {
+        var oldUser = user;
+        isLoggedIn = false;
+        user = null;
+        return ("Logging out " + oldUser);
     }
-
 
     private String clearScreen() {
-        System.out.println(ERASE_SCREEN);
-        return "hi";
+        return "";
     }
 
-    public String login(String... inputs) {
-        isLoggedIn = true;
-        return (inputs[0] + " logged in with " + inputs[1]);
+    private String screenFormater(String contents) {
+        String board = "";
+        if (gameBoard != null) {
+            board = ERASE_SCREEN + stringBoard(gameBoard) + "\n\n";
+        }
 
+
+        String contentsCheckedForNull = "";
+        if (contents != null && !contents.isEmpty()) {
+            contentsCheckedForNull = contents + "\n\n";
+        }
+
+
+        String outputIndicator;
+        if (isLoggedIn) {
+            outputIndicator = "[" + SET_TEXT_COLOR_GREEN + user + RESET_TEXT_COLOR + "] >>> ";
+        } else {
+            outputIndicator = "[" + SET_TEXT_COLOR_RED + "LOGGED_OUT" + RESET_TEXT_COLOR + "] >>> ";
+        }
+
+        return board + contentsCheckedForNull + outputIndicator;
     }
 
-    private void printBoard(ChessBoard board) {
-        System.out.println("Pretend Im a Chess Board");
+
+    private String screenFormater() {
+        return screenFormater("");
+    }
+
+    private String stringBoard(ChessBoard board) {
+        return "Pretend Im a Chess Board";
     }
 
 }
