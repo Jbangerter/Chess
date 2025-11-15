@@ -191,13 +191,6 @@ public class ChessClient {
         var boardArray = board.boardAsArray();
         String stringBoard[][] = new String[10][10];
 
-//        var sRow = 32;
-//        var sCol = 6;
-//        String colorBBoard[][] = new String[sRow][sCol];
-//        var thing = 16;
-//        System.out.println(SET_TEXT_COLOR_GREEN);
-//        boardWhiteSquare = "\u001b[48;5;121m";
-
         String[] columnLabels = {"   ", " a ", " b ", " c ", " d ", " e ", " f ", " g ", " h ", "   "};
         String[] rowLabels = {"   ", " 8 ", " 7 ", " 6 ", " 5 ", " 4 ", " 3 ", " 2 ", " 1 ", "   "};
 
@@ -216,6 +209,11 @@ public class ChessClient {
             }
         }
 
+        if (userColor == ChessGame.TeamColor.BLACK) {
+            flipBoard(stringBoard);
+        }
+
+
         for (int row = 0; row < 10; row++) {
             for (int col = 0; col < 10; col++) {
 
@@ -223,27 +221,26 @@ public class ChessClient {
             }
             System.out.println();
         }
-//
-//        for (int row = 0; row < sRow; row++) {
-//            for (int col = 0; col < sCol; col++) {
-//                colorBBoard[row][col] = boardWhiteSquare + thing + "m" + thing + RESET_BG_COLOR;
-//                thing++;
-//
-//
-//            }
-//        }
-//
-//
-//        for (int row = 0; row < sRow; row++) {
-//            for (int col = 0; col < sCol; col++) {
-//
-//                System.out.print(colorBBoard[row][col]);
-//            }
-//            System.out.println();
-//        }
-
 
         return "Pretend Im a Chess Board";
     }
 
+    public static void flipBoard(String[][] board) {
+        int N = board.length; // Number of rows/columns (assumed even)
+        for (int k = 0; k < (N * N) / 2; k++) {
+            int i = k / N;
+            int j = k % N;
+
+            int r2 = N - 1 - i;
+            int c2 = N - 1 - j;
+
+            swap(board, i, j, r2, c2);
+        }
+    }
+
+    private static void swap(String[][] board, int r1, int c1, int r2, int c2) {
+        String temp = board[r1][c1];
+        board[r1][c1] = board[r2][c2];
+        board[r2][c2] = temp;
+    }
 }
