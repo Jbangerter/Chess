@@ -14,9 +14,9 @@ public class ChessClient {
     private String textColorPrimary = SET_TEXT_COLOR_BLUE;
     private String textColorSecoundary = SET_TEXT_COLOR_LIGHT_GREY;
 
-    private String boardEdgeColor = SET_BG_COLOR_RED;
-    private String boardWhiteSquares = SET_BG_COLOR_WHITE;
-    private String boardBlackSquare = SET_BG_COLOR_BLACK;
+    private String boardEdgeColor = "\u001b[48;5;236m";
+    private String boardWhiteSquare = "\u001b[48;5;121m";
+    private String boardBlackSquare = SET_BG_COLOR_DARK_GREEN;
 
     private String user = "";
     private ChessGame.TeamColor userColor = null;
@@ -190,32 +190,29 @@ public class ChessClient {
     private String stringBoard(ChessBoard board) {
         var boardArray = board.boardAsArray();
         String stringBoard[][] = new String[10][10];
-//
-// Corrected to use String arrays for padding
+
+//        var sRow = 32;
+//        var sCol = 6;
+//        String colorBBoard[][] = new String[sRow][sCol];
+//        var thing = 16;
+//        System.out.println(SET_TEXT_COLOR_GREEN);
+//        boardWhiteSquare = "\u001b[48;5;121m";
+
         String[] columnLabels = {"   ", " a ", " b ", " c ", " d ", " e ", " f ", " g ", " h ", "   "};
-        String[] rowLabels = {"   ", " 1 ", " 2 ", " 3 ", " 4 ", " 5 ", " 6 ", " 7 ", " 8 ", "   "};
-
-
-//        for (String[] col : boardArray) {
-//            for (String piece : col) {
-//                System.out.print(piece);
-//            }
-//            System.out.println();
-//        }
+        String[] rowLabels = {"   ", " 8 ", " 7 ", " 6 ", " 5 ", " 4 ", " 3 ", " 2 ", " 1 ", "   "};
 
         for (int row = 0; row < 10; row++) {
             for (int col = 0; col < 10; col++) {
                 if (row == 0 || row == 9) {
                     stringBoard[row][col] = boardEdgeColor + columnLabels[col] + RESET_BG_COLOR;
-                }
-                if (col == 0 || col == 9) {
+                } else if (col == 0 || col == 9) {
                     stringBoard[row][col] = boardEdgeColor + rowLabels[row] + RESET_BG_COLOR;
+                } else if ((row + col) % 2 == 1) {
+                    stringBoard[row][col] = boardBlackSquare + boardArray[row - 1][col - 1] + RESET_BG_COLOR;
+                } else {
+                    stringBoard[row][col] = boardWhiteSquare + boardArray[row - 1][col - 1] + RESET_BG_COLOR;
                 }
-//                if((row + col) % 2 == 0){
-//
-//                }else{
-//
-//                }
+
             }
         }
 
@@ -226,6 +223,26 @@ public class ChessClient {
             }
             System.out.println();
         }
+//
+//        for (int row = 0; row < sRow; row++) {
+//            for (int col = 0; col < sCol; col++) {
+//                colorBBoard[row][col] = boardWhiteSquare + thing + "m" + thing + RESET_BG_COLOR;
+//                thing++;
+//
+//
+//            }
+//        }
+//
+//
+//        for (int row = 0; row < sRow; row++) {
+//            for (int col = 0; col < sCol; col++) {
+//
+//                System.out.print(colorBBoard[row][col]);
+//            }
+//            System.out.println();
+//        }
+
+
         return "Pretend Im a Chess Board";
     }
 

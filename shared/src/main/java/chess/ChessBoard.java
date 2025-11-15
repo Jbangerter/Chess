@@ -113,7 +113,7 @@ public class ChessBoard {
                 if (piece != null) {
                     board[row][col] = squares[row][col].getPieceSymbol();
                 } else {
-                    board[row][col] = " ";
+                    board[row][col] = "   ";
                 }
             }
         }
