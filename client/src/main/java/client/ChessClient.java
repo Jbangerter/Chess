@@ -29,6 +29,7 @@ public class ChessClient {
 
     private boolean loggedIn = false;
     private boolean isInGame = false;
+    private boolean quitLoop = false;
 
 
     private String[] preLogginHelp = {
@@ -64,7 +65,7 @@ public class ChessClient {
 
         Scanner scanner = new Scanner(System.in);
         String result = "";
-        while (!result.equals("quit")) {
+        while (!quitLoop) {
 
             String input = scanner.nextLine();
 
@@ -113,7 +114,7 @@ public class ChessClient {
             case "logout" -> logout();
             case "help" -> help();
             case "clear" -> clearScreen();
-            case "quit" -> "quit";
+            case "quit" -> quit();
             default -> "Invalid Command, try one of these:\n" + help();
         };
     }
@@ -132,7 +133,6 @@ public class ChessClient {
             this.currentAuthData = authData;
             this.loggedIn = true;
             this.currentUser = username;
-
 
             return String.format("Successfully logged in as '%s'.", authData.username());
 
@@ -193,6 +193,11 @@ public class ChessClient {
         }
     }
 
+    public String quit() {
+        logout();
+        quitLoop = true;
+        return "";
+    }
 
     private String createGame(String[] inputs) {
         return ("Created game: " + inputs[0]);
