@@ -2,6 +2,9 @@ package client;
 
 import chess.ChessBoard;
 import chess.ChessGame;
+import exceptions.HttpResponseException;
+import model.AuthData;
+import model.UserData;
 import serverfacade.ServerFacade;
 
 import java.util.Arrays;
@@ -18,12 +21,13 @@ public class ChessClient {
     private String boardWhiteSquare = "\u001b[48;5;121m";
     private String boardBlackSquare = SET_BG_COLOR_DARK_GREEN;
 
-    private String user = "";
+    private String currentUser = null;
+    private AuthData currentAuthData;
     private ChessGame.TeamColor userColor = null;
     private ChessBoard gameBoard = new ChessBoard();
 
 
-    private boolean isLoggedIn = false;
+    private boolean loggedIn = false;
     private boolean isInGame = false;
 
 
@@ -81,7 +85,7 @@ public class ChessClient {
 
 
     private String help() {
-        if (isLoggedIn) {
+        if (loggedIn) {
             return stringMenu(postLogginHelp);
         } else {
             return stringMenu(preLogginHelp);
@@ -110,23 +114,85 @@ public class ChessClient {
             case "help" -> help();
             case "clear" -> clearScreen();
             case "quit" -> "quit";
-            default -> help();
+            default -> "Invalid Command, try one of these:\n" + help();
         };
     }
 
     public String login(String... inputs) {
-        isLoggedIn = true;
-        user = inputs[0];
-        return (inputs[0] + " logged in with " + inputs[1]);
+        if (inputs.length != 2) {
+            return "Error: Expected exactly two arguments: <username> <password>";
+        }
 
+        String username = inputs[0];
+        String password = inputs[1];
+        UserData user = new UserData(username, null, password);
+
+        try {
+            AuthData authData = server.loginUser(user);
+            this.currentAuthData = authData;
+            this.loggedIn = true;
+            this.currentUser = username;
+
+
+            return String.format("Successfully logged in as '%s'.", authData.username());
+
+        } catch (HttpResponseException e) {
+            this.loggedIn = false;
+            return String.format("Login failed: %s", e.getStatusMessage());
+        } catch (Exception e) {
+            this.loggedIn = false;
+            return String.format("An unexpected error occurred: %s", e.getMessage());
+        }
     }
 
-    private String register(String[] inputs) {
-        isLoggedIn = true;
-        user = inputs[0];
-        return (inputs[0] + " registered with " + inputs[1]);
+    public String register(String... inputs) {
+        if (inputs.length != 3) {
+            return "Error: Expected three arguments: <username> <password> <email>";
+        }
 
+        String username = inputs[0];
+        String email = inputs[1];
+        String password = inputs[2];
+        UserData user = new UserData(username, email, password);
+
+        try {
+            AuthData authData = server.registerUser(user);
+            this.currentAuthData = authData;
+            this.loggedIn = true;
+            this.currentUser = username;
+
+            return String.format("Successfully registered and logged in as '%s'.", authData.username());
+
+        } catch (HttpResponseException e) {
+            this.loggedIn = false;
+            return String.format("Registration failed: %s", e.getMessage());
+        } catch (Exception e) {
+            this.loggedIn = false;
+            return String.format("An unexpected error occurred: %s", e.getMessage());
+        }
     }
+
+
+    public String logout() {
+        if (!loggedIn || currentAuthData == null) {
+            return "Error: You are not currently logged in.";
+        }
+
+        try {
+            server.logoutUser(currentAuthData.authToken());
+            this.currentAuthData = null;
+            this.loggedIn = false;
+            this.currentUser = null;
+
+
+            return "Successfully logged out.";
+        } catch (HttpResponseException e) {
+            return String.format("Logout failed: %s", e.getMessage());
+        } catch (Exception e) {
+            return String.format("An unexpected error occurred during logout: %s", e.getMessage());
+        }
+    }
+
 
     private String createGame(String[] inputs) {
         return ("Created game: " + inputs[0]);
@@ -139,20 +205,12 @@ public class ChessClient {
     private String joinGame(String[] inputs) {
         isInGame = true;
         userColor = ChessGame.TeamColor.valueOf(inputs[1].toUpperCase());
-        return (user + " joined game: " + inputs[0] + " as " + userColor);
+        return (currentUser + " joined game: " + inputs[0] + " as " + userColor);
     }
 
     private String observeGame(String[] inputs) {
         isInGame = true;
-        return (user + " observes game: " + inputs[0]);
-    }
-
-    private String logout() {
-        isInGame = false;
-        var oldUser = user;
-        isLoggedIn = false;
-        user = null;
-        return ("Logging out " + oldUser);
+        return (currentUser + " observes game: " + inputs[0]);
     }
 
     private String clearScreen() {
@@ -173,8 +231,8 @@ public class ChessClient {
 
 
         String outputIndicator;
-        if (isLoggedIn) {
-            outputIndicator = "[" + SET_TEXT_COLOR_GREEN + user + RESET_TEXT_COLOR + "] >>> ";
+        if (loggedIn) {
+            outputIndicator = "[" + SET_TEXT_COLOR_GREEN + currentUser + RESET_TEXT_COLOR + "] >>> ";
         } else {
             outputIndicator = "[" + SET_TEXT_COLOR_RED + "LOGGED_OUT" + RESET_TEXT_COLOR + "] >>> ";
         }
