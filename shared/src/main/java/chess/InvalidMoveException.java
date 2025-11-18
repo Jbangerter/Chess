@@ -1,4 +1,4 @@
-package exceptions;
+package chess;
 
 /**
  * Indicates an invalid move was made in a game

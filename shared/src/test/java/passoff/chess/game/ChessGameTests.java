@@ -3,7 +3,7 @@ package passoff.chess.game;
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
-import exceptions.InvalidMoveException;
+import chess.InvalidMoveException;
 import passoff.chess.EqualsTestingUtility;
 import passoff.chess.TestUtilities;
 

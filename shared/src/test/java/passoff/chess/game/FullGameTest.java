@@ -3,7 +3,7 @@ package passoff.chess.game;
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
-import exceptions.InvalidMoveException;
+import chess.InvalidMoveException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

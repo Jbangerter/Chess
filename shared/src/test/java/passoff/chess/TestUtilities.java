@@ -29,10 +29,6 @@ public class TestUtilities {
         expected.sort(comparator);
         actual.sort(comparator);
 
-//        System.out.println("Expected: " + expected);
-//        System.out.println("Actual: " + actual + "\n");
-
-
         Assertions.assertEquals(expected, actual, "Wrong moves");
     }
 
