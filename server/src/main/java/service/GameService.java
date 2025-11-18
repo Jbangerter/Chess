@@ -56,7 +56,7 @@ public class GameService {
         if (!dataAccess.validateAuthToken(authToken)) {
             throw new UnauthorizedException("Error: unauthorized");
         }
-        if (!(playerColor == ChessGame.TeamColor.BLACK || playerColor == ChessGame.TeamColor.WHITE || playerColor == null)) {
+        if (!(playerColor == ChessGame.TeamColor.BLACK || playerColor == ChessGame.TeamColor.WHITE)) {
             throw new BadRequestException("Error: bad request");
         }
         if (!dataAccess.gameIDExists(gameID)) {
@@ -69,9 +69,7 @@ public class GameService {
         GameData updatedGame = game;
 
 
-        if (playerColor == null) {
-            //allows for no updates to be made when incoperating an observer;
-        } else if (playerColor == ChessGame.TeamColor.BLACK) {
+        if (playerColor == ChessGame.TeamColor.BLACK) {
             if ((game.blackUsername() != null) && (!game.blackUsername().equals(userAuthdata.username()))) {
                 throw new AlreadyTakenException("Error: already taken");
             }
@@ -89,6 +87,22 @@ public class GameService {
 
         dataAccess.updateGame(updatedGame);
         return dataAccess.getGame(updatedGame.gameID());
+
+    }
+
+
+    public GameData joinGameObserver(String authToken, int gameID) throws DataAccessException {
+        if (!dataAccess.validateAuthToken(authToken)) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
+        if (!dataAccess.gameIDExists(gameID)) {
+            throw new BadRequestException("Error: bad request");
+        }
+
+        GameData game = dataAccess.getGame(gameID);
+
+        dataAccess.updateGame(game);
+        return dataAccess.getGame(game.gameID());
 
     }
 
