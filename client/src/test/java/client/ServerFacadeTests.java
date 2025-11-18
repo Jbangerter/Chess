@@ -184,5 +184,108 @@ public class ServerFacadeTests {
         assertNull(game.whiteUsername());
     }
 
+    @Test
+    public void unauthorizedJoinGame() throws HttpResponseException {
+        Map<String, Double> createResponse = facade.createGame(existingUserAuth.authToken(), new CreateGameInput("exampleGame"));
+        int gameId = createResponse.get("gameID").intValue();
+
+        HttpResponseException exception = assertThrows(HttpResponseException.class, () ->
+                facade.joinGame("asdf", new JoinGameInput(ChessGame.TeamColor.BLACK, gameId))
+        );
+        assertEquals(401, exception.getStatusCode(), "Should return 401 Unauthorized");
+        assertTrue(exception.getMessage().contains("Error: unauthorized"));
+    }
+
+    @Test
+    public void joinGameColorTaken() throws HttpResponseException {
+        AuthData testAuthdata = facade.registerUser(testUser);
+
+        Map<String, Double> createResponse = facade.createGame(existingUserAuth.authToken(), new CreateGameInput("exampleGame"));
+        int gameId = createResponse.get("gameID").intValue();
+
+        facade.joinGame(existingUserAuth.authToken(), new JoinGameInput(ChessGame.TeamColor.WHITE, gameId));
+
+        HttpResponseException exception = assertThrows(HttpResponseException.class, () ->
+                facade.joinGame(testAuthdata.authToken(), new JoinGameInput(ChessGame.TeamColor.WHITE, gameId))
+        );
+        assertEquals(403, exception.getStatusCode(), "Should return 403 Forbidden/Already Taken");
+        assertTrue(exception.getMessage().contains("Error: already taken"));
+    }
+
+    @Test
+    public void joinGameInvalidGameId() throws HttpResponseException {
+        int invalidGameId = 9999;
+
+        HttpResponseException exception = assertThrows(HttpResponseException.class, () ->
+                facade.joinGame(existingUserAuth.authToken(), new JoinGameInput(ChessGame.TeamColor.WHITE, invalidGameId))
+        );
+        assertEquals(400, exception.getStatusCode(), "Should return 400 Bad Request");
+        assertTrue(exception.getMessage().contains("Error: bad request"));
+    }
+
+    //Observe games
+
+
+    @Test
+    public void observeGameSuccess() throws HttpResponseException {
+        Map<String, Double> createResponse = facade.createGame(existingUserAuth.authToken(), new CreateGameInput("ObserveTestGame"));
+        int gameId = createResponse.get("gameID").intValue();
+
+        UserData observerUser = new UserData("observerUser", "pass", "email");
+        AuthData observerAuth = facade.registerUser(observerUser);
+
+        JoinGameInput joinInput = new JoinGameInput(ChessGame.TeamColor.WHITE, gameId, true);
+        facade.joinGame(observerAuth.authToken(), joinInput);
+
+        assertTrue(true, "Observation request should succeed without error");
+    }
+
+    @Test
+    public void observeGameUnauthorized() throws HttpResponseException {
+        Map<String, Double> createResponse = facade.createGame(existingUserAuth.authToken(), new CreateGameInput("ObserveTestGame"));
+        int gameId = createResponse.get("gameID").intValue();
+
+        JoinGameInput joinInput = new JoinGameInput(null, gameId, true);
+
+        HttpResponseException exception = assertThrows(HttpResponseException.class, () ->
+                facade.joinGame("TotallyInvalidToken", joinInput)
+        );
+
+        assertEquals(401, exception.getStatusCode(), "Should return 401 Unauthorized for invalid auth token");
+        assertTrue(exception.getMessage().contains("Error: unauthorized"));
+    }
+
+
+    // LIST GAME TESTS
+
+    @Test
+    public void listNoGames() throws HttpResponseException {
+        List<ShortenedGameData> gameList = facade.listGames(existingUserAuth.authToken());
+
+        assertNotNull(gameList);
+        assertTrue(gameList.isEmpty(), "Game list should be empty if no games are created");
+    }
+
+    @Test
+    public void listGames() throws HttpResponseException {
+        facade.createGame(existingUserAuth.authToken(), new CreateGameInput("exampleGame1"));
+        facade.createGame(existingUserAuth.authToken(), new CreateGameInput("exampleGame2"));
+        facade.createGame(existingUserAuth.authToken(), new CreateGameInput("exampleGame3"));
+
+        List<ShortenedGameData> gameList = facade.listGames(existingUserAuth.authToken());
+
+        assertNotNull(gameList);
+        assertEquals(3, gameList.size());
+    }
+
+    @Test
+    public void listGamesUnauthorized() {
+        HttpResponseException exception = assertThrows(HttpResponseException.class, () ->
+                facade.listGames("InvalidAuthToken")
+        );
+        assertEquals(401, exception.getStatusCode(), "Should return 401 Unauthorized");
+        assertTrue(exception.getMessage().contains("Error: unauthorized"));
+    }
+
 
 }

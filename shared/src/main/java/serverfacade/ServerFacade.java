@@ -103,7 +103,7 @@ public class ServerFacade {
             response = client.send(request, BodyHandlers.ofString());
         } catch (IOException | InterruptedException ex) {
 
-            throw new HttpResponseException(999, ex.getMessage());
+            throw new HttpResponseException(404, "Error: Server Unavailable");
         }
 
         int statusCode = response.statusCode();

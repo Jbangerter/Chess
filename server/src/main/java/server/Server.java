@@ -123,12 +123,12 @@ public class Server {
         String reqJson = ctx.body();
         var req = serializer.fromJson(reqJson, JoinGameInput.class);
 
-
+        GameData game;
         if (req.observer()) {
-            GameData game = this.gameService.joinGameObserver(authToken, req.gameID());
+            game = this.gameService.joinGameObserver(authToken, req.gameID());
+        } else {
+            game = this.gameService.joinGame(authToken, req.playerColor(), req.gameID());
         }
-        GameData game = this.gameService.joinGame(authToken, req.playerColor(), req.gameID());
-
         ctx.status(200).json(game);
     }
 

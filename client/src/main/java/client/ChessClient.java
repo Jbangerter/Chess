@@ -352,7 +352,7 @@ public class ChessClient {
         }
 
         String authToken = currentAuthData.authToken();
-        JoinGameInput gameRequest = new JoinGameInput(null, gameId,true);
+        JoinGameInput gameRequest = new JoinGameInput(ChessGame.TeamColor.WHITE, gameId,true);
         try {
             ChessGame gameState = server.joinGame(authToken, gameRequest).game();
             gameBoard = gameState.getBoard();
