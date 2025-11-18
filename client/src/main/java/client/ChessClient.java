@@ -4,11 +4,16 @@ import chess.ChessBoard;
 import chess.ChessGame;
 import exceptions.HttpResponseException;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
+import model.gameservicerecords.CreateGameInput;
 import serverfacade.ServerFacade;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import static chess.EscapeSequences.*;
 
@@ -124,6 +129,10 @@ public class ChessClient {
             return "Error: Expected exactly two arguments: <username> <password>";
         }
 
+        if (loggedIn) {
+            logout();
+        }
+
         String username = inputs[0];
         String password = inputs[1];
         UserData user = new UserData(username, null, password);
@@ -149,6 +158,11 @@ public class ChessClient {
         if (inputs.length != 3) {
             return "Error: Expected three arguments: <username> <password> <email>";
         }
+
+        if (loggedIn) {
+            logout();
+        }
+
 
         String username = inputs[0];
         String email = inputs[1];
@@ -199,13 +213,63 @@ public class ChessClient {
         return "";
     }
 
-    private String createGame(String[] inputs) {
-        return ("Created game: " + inputs[0]);
+    public String createGame(String... inputs) {
+        if (!loggedIn || currentAuthData == null) {
+            return "Error: You must be logged in to create a game.";
+        }
+
+        if (inputs.length != 1) {
+            return "Error: Expected one argument: <gameName>";
+        }
+
+        String gameName = inputs[0];
+        String authToken = currentAuthData.authToken();
+        CreateGameInput newGame = new CreateGameInput(gameName);
+
+        try {
+            Map<String, Double> response = server.createGame(authToken, newGame);
+            double gameId = response.get("gameID");
+
+            return String.format("Game '%s' created successfully with ID: %d.", gameName, (int) gameId);
+
+        } catch (HttpResponseException e) {
+            return String.format("Create game failed: %s", e.getMessage());
+        } catch (Exception e) {
+            return String.format("An unexpected error occurred: %s", e.getMessage());
+        }
     }
 
-    private String listGames() {
-        return "List of Games";
+    public String listGames() {
+        if (!loggedIn || currentAuthData == null) {
+            return "Error: You must be logged in to list games.";
+        }
+
+        String authToken = currentAuthData.authToken();
+
+        try {
+            // The facade returns a List<GameData>
+            List<GameData> games = server.listGames(authToken);
+
+            if (games == null || games.isEmpty()) {
+                return "No games found.";
+            }
+
+            // Format the list into a readable string
+            return games.stream()
+                    .map(game -> String.format("ID: %d | Name: %s | White Player: %s | Black Player: %s",
+                            game.gameID(),
+                            game.gameName(),
+                            game.whiteUsername() != null ? game.whiteUsername() : "None",
+                            game.blackUsername() != null ? game.blackUsername() : "None"))
+                    .collect(Collectors.joining("\n"));
+
+        } catch (HttpResponseException e) {
+            return String.format("List games failed: %s", e.getMessage());
+        } catch (Exception e) {
+            return String.format("An unexpected error occurred: %s", e.getMessage());
+        }
     }
+
 
     private String joinGame(String[] inputs) {
         isInGame = true;

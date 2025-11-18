@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import exceptions.ErrorResponse;
 import exceptions.HttpResponseException;
 import model.*;
+import model.gameservicerecords.CreateGameInput;
 
 import java.io.IOException;
 import java.net.*;
@@ -12,6 +13,8 @@ import java.net.http.*;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.List;
+import java.util.Map;
 
 public class ServerFacade {
 
@@ -38,7 +41,20 @@ public class ServerFacade {
     public void logoutUser(String authToken) throws HttpResponseException {
         var request = buildRequest("DELETE", "/session", null, authToken);
         var response = sendRequest(request);
-        handleResponse(response, null); // Expects an empty body
+        handleResponse(response, null);
+    }
+
+    public Map<String, Double> createGame(String authToken, CreateGameInput gameName) throws HttpResponseException {
+        var request = buildRequest("POST", "/game", gameName, authToken);
+        var response = sendRequest(request);
+        return handleResponse(response, Map.class);
+
+    }
+
+    public List<GameData> listGames(String authToken) throws HttpResponseException {
+        var request = buildRequest("GET", "/session", null, authToken);
+        var response = sendRequest(request);
+        return handleResponse(response, List.class); // Expects an empty body
     }
 
 

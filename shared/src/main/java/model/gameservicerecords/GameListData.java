@@ -1,4 +1,4 @@
-package service.gameservicerecords;
+package model.gameservicerecords;
 
 import java.util.Collection;
 

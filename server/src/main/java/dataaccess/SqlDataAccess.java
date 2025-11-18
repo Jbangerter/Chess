@@ -334,7 +334,7 @@ public class SqlDataAccess implements DataAccess {
 
             int rowsAffected = pstmt.executeUpdate();
 
-            System.out.println("User added successfully. Rows affected: " + rowsAffected);
+            System.out.println("Game added successfully. Rows affected: " + rowsAffected);
 
         } catch (SQLException e) {
             throw new DataAccessException("Failed to create game:" + game.gameName(), e);

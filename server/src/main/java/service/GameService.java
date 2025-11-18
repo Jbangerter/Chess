@@ -4,10 +4,9 @@ import dataaccess.DataAccessException;
 import dataaccess.SqlDataAccess;
 import exceptions.*;
 import chess.ChessGame;
-import dataaccess.MemoryDataAccess;
 import model.*;
-import service.gameservicerecords.GameListData;
-import service.gameservicerecords.ShortenedGameData;
+import model.gameservicerecords.GameListData;
+import model.gameservicerecords.ShortenedGameData;
 
 import java.util.ArrayList;
 import java.util.Collection;
