@@ -7,6 +7,7 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 import model.gameservicerecords.CreateGameInput;
+import model.gameservicerecords.ShortenedGameData;
 import serverfacade.ServerFacade;
 
 import java.util.Arrays;
@@ -248,7 +249,7 @@ public class ChessClient {
 
         try {
             // The facade returns a List<GameData>
-            List<GameData> games = server.listGames(authToken);
+            List<ShortenedGameData> games = server.listGames(authToken);
 
             if (games == null || games.isEmpty()) {
                 return "No games found.";
@@ -256,7 +257,7 @@ public class ChessClient {
 
             // Format the list into a readable string
             return games.stream()
-                    .map(game -> String.format("ID: %d | Name: %s | White Player: %s | Black Player: %s",
+                    .map(game -> String.format("ID: %-5d | Name: %-20s | White Player: %-15s | Black Player: %-15s",
                             game.gameID(),
                             game.gameName(),
                             game.whiteUsername() != null ? game.whiteUsername() : "None",

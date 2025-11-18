@@ -6,6 +6,8 @@ import exceptions.ErrorResponse;
 import exceptions.HttpResponseException;
 import model.*;
 import model.gameservicerecords.CreateGameInput;
+import model.gameservicerecords.GameListData;
+import model.gameservicerecords.ShortenedGameData;
 
 import java.io.IOException;
 import java.net.*;
@@ -13,6 +15,7 @@ import java.net.http.*;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -51,10 +54,12 @@ public class ServerFacade {
 
     }
 
-    public List<GameData> listGames(String authToken) throws HttpResponseException {
-        var request = buildRequest("GET", "/session", null, authToken);
+    public List<ShortenedGameData> listGames(String authToken) throws HttpResponseException {
+        var request = buildRequest("GET", "/game", null, authToken);
         var response = sendRequest(request);
-        return handleResponse(response, List.class); // Expects an empty body
+        var gameList = handleResponse(response, GameListData.class); // Expects an empty body
+
+        return new ArrayList<>(gameList.games());
     }
 
 
