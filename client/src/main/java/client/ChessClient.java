@@ -352,7 +352,7 @@ public class ChessClient {
         }
 
         String authToken = currentAuthData.authToken();
-        JoinGameInput gameRequest = new JoinGameInput(ChessGame.TeamColor.WHITE, gameId,true);
+        JoinGameInput gameRequest = new JoinGameInput(ChessGame.TeamColor.WHITE, gameId, true);
         try {
             ChessGame gameState = server.joinGame(authToken, gameRequest).game();
             gameBoard = gameState.getBoard();
@@ -449,13 +449,13 @@ public class ChessClient {
     }
 
     public static void flipBoard(String[][] board) {
-        int N = board.length; // Number of rows/columns (assumed even)
-        for (int k = 0; k < (N * N) / 2; k++) {
-            int i = k / N;
-            int j = k % N;
+        int n = board.length; // Number of rows/columns (assumed even)
+        for (int k = 0; k < (n * n) / 2; k++) {
+            int i = k / n;
+            int j = k % n;
 
-            int r2 = N - 1 - i;
-            int c2 = N - 1 - j;
+            int r2 = n - 1 - i;
+            int c2 = n - 1 - j;
 
             flip(board, i, j, r2, c2);
         }

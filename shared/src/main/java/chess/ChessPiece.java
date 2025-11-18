@@ -17,8 +17,8 @@ public class ChessPiece {
     private ChessBoard board;
     private ChessPosition myPosition;
 
-    private String BlackColor = SET_TEXT_COLOR_WHITE;
-    private String WhiteColor = SET_TEXT_COLOR_BLACK;
+    private String blackColor = SET_TEXT_COLOR_WHITE;
+    private String whiteColor = SET_TEXT_COLOR_BLACK;
 
     public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
         this.pieceColor = pieceColor;
@@ -29,22 +29,22 @@ public class ChessPiece {
     public String getPieceSymbol() {
         if (pieceColor == ChessGame.TeamColor.WHITE) {
             return switch (type) {
-                case KING -> SET_TEXT_BOLD + WhiteColor + " ♚ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
-                case QUEEN -> SET_TEXT_BOLD + WhiteColor + " ♛ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
-                case BISHOP -> SET_TEXT_BOLD + WhiteColor + " ♝ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
-                case KNIGHT -> SET_TEXT_BOLD + WhiteColor + " ♞ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
-                case ROOK -> SET_TEXT_BOLD + WhiteColor + " ♜ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
-                case PAWN -> SET_TEXT_BOLD + WhiteColor + " ♟ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case KING -> SET_TEXT_BOLD + whiteColor + " ♚ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case QUEEN -> SET_TEXT_BOLD + whiteColor + " ♛ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case BISHOP -> SET_TEXT_BOLD + whiteColor + " ♝ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case KNIGHT -> SET_TEXT_BOLD + whiteColor + " ♞ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case ROOK -> SET_TEXT_BOLD + whiteColor + " ♜ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case PAWN -> SET_TEXT_BOLD + whiteColor + " ♟ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
                 default -> throw new IllegalArgumentException("Unknown PieceType: " + type);
             };
         } else {
             return switch (type) {
-                case KING -> SET_TEXT_BOLD + BlackColor + " ♚ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
-                case QUEEN -> SET_TEXT_BOLD + BlackColor + " ♛ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
-                case BISHOP -> SET_TEXT_BOLD + BlackColor + " ♝ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
-                case KNIGHT -> SET_TEXT_BOLD + BlackColor + " ♞ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
-                case ROOK -> SET_TEXT_BOLD + BlackColor + " ♜ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
-                case PAWN -> SET_TEXT_BOLD + BlackColor + " ♟ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case KING -> SET_TEXT_BOLD + blackColor + " ♚ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case QUEEN -> SET_TEXT_BOLD + blackColor + " ♛ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case BISHOP -> SET_TEXT_BOLD + blackColor + " ♝ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case KNIGHT -> SET_TEXT_BOLD + blackColor + " ♞ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case ROOK -> SET_TEXT_BOLD + blackColor + " ♜ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
+                case PAWN -> SET_TEXT_BOLD + blackColor + " ♟ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
                 default -> throw new IllegalArgumentException("Unknown PieceType: " + type);
             };
         }
