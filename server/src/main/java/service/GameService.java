@@ -52,11 +52,11 @@ public class GameService {
     }
 
 
-    public void joinGame(String authToken, ChessGame.TeamColor playerColor, int gameID) throws DataAccessException {
+    public GameData joinGame(String authToken, ChessGame.TeamColor playerColor, int gameID) throws DataAccessException {
         if (!dataAccess.validateAuthToken(authToken)) {
             throw new UnauthorizedException("Error: unauthorized");
         }
-        if (!(playerColor == ChessGame.TeamColor.BLACK || playerColor == ChessGame.TeamColor.WHITE)) {
+        if (!(playerColor == ChessGame.TeamColor.BLACK || playerColor == ChessGame.TeamColor.WHITE || playerColor == null)) {
             throw new BadRequestException("Error: bad request");
         }
         if (!dataAccess.gameIDExists(gameID)) {
@@ -69,15 +69,17 @@ public class GameService {
         GameData updatedGame = game;
 
 
-        if (playerColor == ChessGame.TeamColor.BLACK) {
-            if (game.blackUsername() != null) {
+        if (playerColor == null) {
+            //allows for no updates to be made when incoperating an observer;
+        } else if (playerColor == ChessGame.TeamColor.BLACK) {
+            if ((game.blackUsername() != null) && (!game.blackUsername().equals(userAuthdata.username()))) {
                 throw new AlreadyTakenException("Error: already taken");
             }
 
             updatedGame = new GameData(game.gameID(), game.whiteUsername(), userData.username(), game.gameName(), game.game());
 
         } else if (playerColor == ChessGame.TeamColor.WHITE) {
-            if (game.whiteUsername() != null) {
+            if ((game.whiteUsername() != null) && (!game.whiteUsername().equals(userAuthdata.username()))) {
                 throw new AlreadyTakenException("Error: already taken");
             }
             updatedGame = new GameData(game.gameID(), userData.username(), game.blackUsername(), game.gameName(), game.game());
@@ -86,6 +88,7 @@ public class GameService {
         }
 
         dataAccess.updateGame(updatedGame);
+        return dataAccess.getGame(updatedGame.gameID());
 
     }
 

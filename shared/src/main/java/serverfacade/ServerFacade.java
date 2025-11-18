@@ -5,9 +5,7 @@ import com.google.gson.Gson;
 import exceptions.ErrorResponse;
 import exceptions.HttpResponseException;
 import model.*;
-import model.gameservicerecords.CreateGameInput;
-import model.gameservicerecords.GameListData;
-import model.gameservicerecords.ShortenedGameData;
+import model.gameservicerecords.*;
 
 import java.io.IOException;
 import java.net.*;
@@ -57,11 +55,15 @@ public class ServerFacade {
     public List<ShortenedGameData> listGames(String authToken) throws HttpResponseException {
         var request = buildRequest("GET", "/game", null, authToken);
         var response = sendRequest(request);
-        var gameList = handleResponse(response, GameListData.class); // Expects an empty body
-
+        var gameList = handleResponse(response, GameListData.class);
         return new ArrayList<>(gameList.games());
     }
 
+    public GameData joinGame(String authToken, JoinGameInput gameData) throws HttpResponseException {
+        var request = buildRequest("PUT", "/game", gameData, authToken);
+        var response = sendRequest(request);
+        return handleResponse(response, GameData.class);
+    }
 
     private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
         var builder = HttpRequest.newBuilder()

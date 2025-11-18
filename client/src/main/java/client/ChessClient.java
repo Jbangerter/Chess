@@ -4,9 +4,9 @@ import chess.ChessBoard;
 import chess.ChessGame;
 import exceptions.HttpResponseException;
 import model.AuthData;
-import model.GameData;
 import model.UserData;
 import model.gameservicerecords.CreateGameInput;
+import model.gameservicerecords.JoinGameInput;
 import model.gameservicerecords.ShortenedGameData;
 import serverfacade.ServerFacade;
 
@@ -34,7 +34,8 @@ public class ChessClient {
 
 
     private boolean loggedIn = false;
-    private boolean isInGame = false;
+    private boolean inGame = false;
+    private boolean observing = false;
     private boolean quitLoop = false;
 
 
@@ -56,6 +57,13 @@ public class ChessClient {
             textColorPrimary + "Logout" + RESET_TEXT_COLOR + " - Logout",
             textColorPrimary + "Help" + RESET_TEXT_COLOR + " - Display this menu",
             textColorPrimary + "Quit" + RESET_TEXT_COLOR + " - Quit Chess"
+
+    };
+
+    private String[] inGameHelp = {
+
+            textColorPrimary + "Help" + RESET_TEXT_COLOR + " - Display this menu",
+            textColorPrimary + "Leave" + RESET_TEXT_COLOR + " - Leave current game"
 
     };
 
@@ -94,6 +102,8 @@ public class ChessClient {
     private String help() {
         if (loggedIn) {
             return stringMenu(postLogginHelp);
+        } else if (inGame) {
+            return stringMenu(inGameHelp);
         } else {
             return stringMenu(preLogginHelp);
         }
@@ -198,6 +208,9 @@ public class ChessClient {
             this.currentAuthData = null;
             this.loggedIn = false;
             this.currentUser = null;
+            this.userColor = null;
+            this.inGame = false;
+            this.observing = false;
 
 
             return "Successfully logged out.";
@@ -248,14 +261,12 @@ public class ChessClient {
         String authToken = currentAuthData.authToken();
 
         try {
-            // The facade returns a List<GameData>
             List<ShortenedGameData> games = server.listGames(authToken);
 
             if (games == null || games.isEmpty()) {
                 return "No games found.";
             }
 
-            // Format the list into a readable string
             return games.stream()
                     .map(game -> String.format("ID: %-5d | Name: %-20s | White Player: %-15s | Black Player: %-15s",
                             game.gameID(),
@@ -272,16 +283,97 @@ public class ChessClient {
     }
 
 
-    private String joinGame(String[] inputs) {
-        isInGame = true;
-        userColor = ChessGame.TeamColor.valueOf(inputs[1].toUpperCase());
-        return (currentUser + " joined game: " + inputs[0] + " as " + userColor);
+    public String joinGame(String... inputs) {
+        if (!loggedIn || currentAuthData == null) {
+            return "Error: You must be logged in to join a game.";
+        }
+
+        if (inputs.length != 2) {
+            return "Error: Expected two arguments: <gameID> <WHITE|BLACK>";
+        }
+
+        int gameId;
+        try {
+            gameId = Integer.parseInt(inputs[0]);
+        } catch (NumberFormatException e) {
+            return "Error: Game ID must be a valid number.";
+        }
+
+        String playerColor = inputs[1].toUpperCase();
+
+        ChessGame.TeamColor playerTeamColor;
+
+        if ("WHITE".equals(playerColor)) {
+            playerTeamColor = ChessGame.TeamColor.WHITE;
+        } else if ("BLACK".equals(playerColor)) {
+            playerTeamColor = ChessGame.TeamColor.BLACK;
+        } else {
+            return "Error: Invalid color specified. Use WHITE or BLACK.";
+        }
+
+        String authToken = currentAuthData.authToken();
+        JoinGameInput gameRequest = new JoinGameInput(playerTeamColor, gameId);
+        try {
+            ChessGame gameState = server.joinGame(authToken, gameRequest).game();
+            gameBoard = gameState.getBoard();
+            inGame = true;
+            observing = false;
+            userColor = playerTeamColor;
+
+            return String.format("Successfully joined game %d as the %s Player.", gameId, playerColor);
+
+        } catch (HttpResponseException e) {
+            gameBoard = new ChessBoard();
+            inGame = false;
+            userColor = null;
+            return String.format("Joining game failed: %s", e.getStatusMessage());
+        } catch (Exception e) {
+            gameBoard = new ChessBoard();
+            inGame = false;
+            userColor = null;
+            return String.format("An unexpected error occurred: %s", e.getMessage());
+        }
     }
 
-    private String observeGame(String[] inputs) {
-        isInGame = true;
-        return (currentUser + " observes game: " + inputs[0]);
+    public String observeGame(String... inputs) {
+        if (!loggedIn || currentAuthData == null) {
+            return "Error: You must be logged in to join a game.";
+        }
+
+        if (inputs.length != 1) {
+            return "Error: Expected two arguments: <gameID>";
+        }
+
+        int gameId;
+        try {
+            gameId = Integer.parseInt(inputs[0]);
+        } catch (NumberFormatException e) {
+            return "Error: Game ID must be a valid number.";
+        }
+
+        String authToken = currentAuthData.authToken();
+        JoinGameInput gameRequest = new JoinGameInput(null, gameId);
+        try {
+            ChessGame gameState = server.joinGame(authToken, gameRequest).game();
+            gameBoard = gameState.getBoard();
+            inGame = false;
+            observing = true;
+
+            return String.format("Observing game: %d", gameId);
+
+        } catch (HttpResponseException e) {
+            gameBoard = new ChessBoard();
+            inGame = false;
+            userColor = null;
+            return String.format("Joining game failed: %s", e.getStatusMessage());
+        } catch (Exception e) {
+            gameBoard = new ChessBoard();
+            inGame = false;
+            userColor = null;
+            return String.format("An unexpected error occurred: %s", e.getMessage());
+        }
     }
+
 
     private String clearScreen() {
         return "";
@@ -289,7 +381,7 @@ public class ChessClient {
 
     private String screenFormater(String message) {
         String board = "";
-        if (gameBoard != null && isInGame == true) {
+        if (gameBoard != null && (inGame || observing)) {
             board = ERASE_SCREEN + stringBoard(gameBoard) + "\n\n";
         }
 
@@ -301,7 +393,11 @@ public class ChessClient {
 
 
         String outputIndicator;
-        if (loggedIn) {
+        if (loggedIn && inGame) {
+            outputIndicator = "[" + SET_TEXT_COLOR_GREEN + currentUser + RESET_TEXT_COLOR + ": " + userColor + "] >>> ";
+        } else if (loggedIn && observing) {
+            outputIndicator = "[" + SET_TEXT_COLOR_GREEN + currentUser + RESET_TEXT_COLOR + ": " + "Observer" + "] >>> ";
+        } else if (loggedIn) {
             outputIndicator = "[" + SET_TEXT_COLOR_GREEN + currentUser + RESET_TEXT_COLOR + "] >>> ";
         } else {
             outputIndicator = "[" + SET_TEXT_COLOR_RED + "LOGGED_OUT" + RESET_TEXT_COLOR + "] >>> ";
@@ -341,16 +437,15 @@ public class ChessClient {
             flipBoard(stringBoard);
         }
 
-
+        StringBuilder sb = new StringBuilder();
         for (int row = 0; row < 10; row++) {
             for (int col = 0; col < 10; col++) {
-
-                System.out.print(stringBoard[row][col]);
+                sb.append(stringBoard[row][col]);
             }
-            System.out.println();
+            sb.append("\n");
         }
 
-        return "Pretend Im a Chess Board";
+        return sb.toString();
     }
 
     public static void flipBoard(String[][] board) {

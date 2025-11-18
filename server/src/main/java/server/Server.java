@@ -123,9 +123,9 @@ public class Server {
         String reqJson = ctx.body();
         var req = serializer.fromJson(reqJson, JoinGameInput.class);
 
-        this.gameService.joinGame(authToken, req.playerColor(), req.gameID());
+        GameData game = this.gameService.joinGame(authToken, req.playerColor(), req.gameID());
 
-        ctx.status(200).json("{}");
+        ctx.status(200).json(game);
     }
 
     private void listGames(@NotNull Context ctx) throws DataAccessException {
