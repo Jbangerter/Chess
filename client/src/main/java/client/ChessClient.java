@@ -190,7 +190,7 @@ public class ChessClient {
 
         } catch (HttpResponseException e) {
             this.loggedIn = false;
-            return String.format("Registration failed: %s", e.getMessage());
+            return String.format("Registration failed: %s", e.getStatusMessage());
         } catch (Exception e) {
             this.loggedIn = false;
             return String.format("An unexpected error occurred: %s", e.getMessage());
@@ -341,7 +341,7 @@ public class ChessClient {
         }
 
         if (inputs.length != 1) {
-            return "Error: Expected two arguments: <gameID>";
+            return "Error: Expected one argument: <gameID>";
         }
 
         int gameId;
@@ -365,11 +365,13 @@ public class ChessClient {
             gameBoard = new ChessBoard();
             inGame = false;
             userColor = null;
-            return String.format("Joining game failed: %s", e.getStatusMessage());
+            observing = false;
+            return String.format("Failed to observe game: %s", e.getStatusMessage());
         } catch (Exception e) {
             gameBoard = new ChessBoard();
             inGame = false;
             userColor = null;
+            observing = false;
             return String.format("An unexpected error occurred: %s", e.getMessage());
         }
     }

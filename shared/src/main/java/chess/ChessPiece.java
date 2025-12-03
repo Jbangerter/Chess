@@ -13,12 +13,9 @@ import static chess.EscapeSequences.*;
 public class ChessPiece {
 
     private final ChessGame.TeamColor pieceColor;
-    private PieceType type;
+    private final PieceType type;
     private ChessBoard board;
     private ChessPosition myPosition;
-
-    private String blackColor = SET_TEXT_COLOR_WHITE;
-    private String whiteColor = SET_TEXT_COLOR_BLACK;
 
     public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
         this.pieceColor = pieceColor;
@@ -27,6 +24,9 @@ public class ChessPiece {
 
 
     public String getPieceSymbol() {
+        String whiteColor = SET_TEXT_COLOR_BLACK;
+        String blackColor = SET_TEXT_COLOR_WHITE;
+
         if (pieceColor == ChessGame.TeamColor.WHITE) {
             return switch (type) {
                 case KING -> SET_TEXT_BOLD + whiteColor + " ♚ " + RESET_TEXT_COLOR + RESET_TEXT_BOLD_FAINT;
@@ -167,7 +167,6 @@ public class ChessPiece {
                 } else if (nextSquare.getTeamColor() != pieceColor) {
                     moves.add(nextMove);
                 } else {
-                    return;
                 }
             }
         }
@@ -176,10 +175,8 @@ public class ChessPiece {
         private boolean moveInBounds(ChessPosition start, int deltaRow, int deltaCol) {
             if (((start.getRow() + deltaRow) > 8) || ((start.getRow() + deltaRow) < 1)) {
                 return false;
-            } else if (((start.getColumn() + deltaCol) > 8) || ((start.getColumn() + deltaCol) < 1)) {
-                return false;
             } else {
-                return true;
+                return ((start.getColumn() + deltaCol) <= 8) && ((start.getColumn() + deltaCol) >= 1);
             }
         }
     }
@@ -429,7 +426,6 @@ public class ChessPiece {
             } else if (nextSquare.getTeamColor() != pieceColor && isAttcking) {
                 addMove(startPosition, nextPosition, moves);
             } else {
-                return;
             }
         }
 
