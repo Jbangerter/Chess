@@ -131,8 +131,15 @@ public class ChessClient {
             case "help" -> help();
             case "clear" -> clearScreen();
             case "quit" -> quit();
+            case "ping" ->
             default -> "Invalid Command, try one of these:\n" + help();
         };
+    }
+
+
+    public String ping(){
+
+
     }
 
     public String login(String... inputs) {
