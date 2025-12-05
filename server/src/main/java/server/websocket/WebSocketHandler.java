@@ -18,10 +18,14 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     @Override
     public void handleMessage(@NotNull WsMessageContext ctx) {
         ctx.send("WebSocket response:" + ctx.message());
+        //TODO: make this handlw the logic it needs to.
     }
 
     @Override
     public void handleClose(@NotNull WsCloseContext ctx) {
         System.out.println("Websocket closed");
     }
+
+    //TODO: make this do the stuff handle message needs it to
+
 }

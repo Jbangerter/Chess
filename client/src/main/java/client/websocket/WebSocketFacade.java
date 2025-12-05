@@ -15,18 +15,18 @@ public class WebSocketFacade extends Endpoint {
     public Session session;
 
     public static void main(String[] args) throws Exception {
-        WebSocketFacade client = new WebSocketFacade();
+        WebSocketFacade client = new WebSocketFacade("ws://localhost:8080/ws");
 
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("Enter a message you want to echo:");
-        while(true) {
+        while (true) {
             client.send(scanner.nextLine());
         }
     }
 
-    public WebSocketFacade() throws Exception {
-        URI uri = new URI("ws://localhost:8080/ws");
+    public WebSocketFacade(String webSocketUri) throws Exception {
+        URI uri = new URI(webSocketUri);
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         session = container.connectToServer(this, uri);
 

@@ -2,6 +2,7 @@ package client;
 
 import chess.ChessBoard;
 import chess.ChessGame;
+import client.websocket.WebSocketFacade;
 import exceptions.HttpResponseException;
 import model.AuthData;
 import model.UserData;
@@ -20,6 +21,8 @@ import static chess.EscapeSequences.*;
 
 public class ChessClient {
     private final ServerFacade server;
+    private final WebSocketFacade webSocket;
+
     private String textColorPrimary = SET_TEXT_COLOR_BLUE;
     private String textColorSecoundary = SET_TEXT_COLOR_LIGHT_GREY;
 
@@ -67,8 +70,9 @@ public class ChessClient {
 
     };
 
-    public ChessClient(String serverUrl) {
+    public ChessClient(String serverUrl, String webSocketUri) throws Exception {
         server = new ServerFacade(serverUrl);
+        webSocket = new WebSocketFacade(webSocketUri);
         gameBoard.resetBoard();
 
     }
@@ -131,14 +135,29 @@ public class ChessClient {
             case "help" -> help();
             case "clear" -> clearScreen();
             case "quit" -> quit();
-            case "ping" ->
+            case "ping" -> ping();
             default -> "Invalid Command, try one of these:\n" + help();
         };
     }
 
 
-    public String ping(){
+    public String ping(String... inputs) {
+        if (inputs.length != 1) {
+            return "Error: Expected exactly one argument: <message>";
+        }
 
+
+        try {
+            //String response = server.ping(inputs[0]);
+
+            return "Line 153";
+
+        } catch (HttpResponseException e) {
+            return String.format("Ping failed: %s", e.getStatusMessage());
+        } catch (Exception e) {
+            this.loggedIn = false;
+            return String.format("An unexpected error occurred: %s", e.getMessage());
+        }
 
     }
 
