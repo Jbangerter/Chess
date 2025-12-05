@@ -11,6 +11,7 @@ import io.javalin.*;
 import io.javalin.json.JavalinGson;
 import io.javalin.http.Context;
 import org.jetbrains.annotations.NotNull;
+import server.websocket.WebSocketHandler;
 import service.*;
 import model.*;
 import model.gameservicerecords.CreateGameInput;
@@ -20,11 +21,15 @@ public class Server {
 
     private final Javalin javalin;
 
+    private final WebSocketHandler webSocketHandler;
+
     private SqlDataAccess dataAccess;
     private UserService userService;
     private GameService gameService;
 
     public Server() {
+        webSocketHandler = new WebSocketHandler();
+
         dataAccess = new SqlDataAccess();
         userService = new UserService(dataAccess);
         gameService = new GameService(dataAccess);
@@ -63,6 +68,12 @@ public class Server {
         javalin.post("/game", this::createGame);
         javalin.put("/game", this::joinGame);
         javalin.get("/game", this::listGames);
+
+        javalin.ws("/ws", ws -> {
+            ws.onConnect(webSocketHandler);
+            ws.onMessage(webSocketHandler);
+            ws.onClose(webSocketHandler);
+        });
     }
 
     private void deleteAll(@NotNull Context ctx) throws DataAccessException {

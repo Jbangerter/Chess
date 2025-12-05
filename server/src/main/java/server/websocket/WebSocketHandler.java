@@ -1,34 +1,27 @@
 package server.websocket;
 
-import jakarta.websocket.Session;
-import jakarta.websocket.server.ServerEndpoint;
-import jakarta.websocket.OnMessage;
-import jakarta.websocket.OnOpen;
-import jakarta.websocket.OnClose;
-import jakarta.websocket.OnError;
+import io.javalin.websocket.WsCloseContext;
+import io.javalin.websocket.WsCloseHandler;
+import io.javalin.websocket.WsConnectContext;
+import io.javalin.websocket.WsConnectHandler;
+import io.javalin.websocket.WsMessageContext;
+import io.javalin.websocket.WsMessageHandler;
+import org.jetbrains.annotations.NotNull;
 
-@ServerEndpoint("/ws")
-public class WebSocketHandler {
-
-    @OnOpen
-    public void onOpen(Session session) {
-        System.out.println("Server: New client connected. ID: " + session.getId());
+public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
+    @Override
+    public void handleConnect(@NotNull WsConnectContext ctx) {
+        ctx.enableAutomaticPings();
+        System.out.println("Websocket connected");
     }
 
-    @OnMessage
-    public String onMessage(String message, Session session) {
-        System.out.println("Server received PING: " + message);
-
-        return "Server echoed: " + message;
+    @Override
+    public void handleMessage(@NotNull WsMessageContext ctx) {
+        ctx.send("WebSocket response:" + ctx.message());
     }
 
-    @OnClose
-    public void onClose(Session session) {
-        System.out.println("Server: Client disconnected. ID: " + session.getId());
-    }
-
-    @OnError
-    public void onError(Session session, Throwable throwable) {
-        System.err.println("Server error for session " + session.getId() + ": " + throwable.getMessage());
+    @Override
+    public void handleClose(@NotNull WsCloseContext ctx) {
+        System.out.println("Websocket closed");
     }
 }

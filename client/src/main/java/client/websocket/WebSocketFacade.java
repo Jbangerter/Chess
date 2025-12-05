@@ -1,45 +1,48 @@
 package client.websocket;
 
-import org.glassfish.tyrus.client.ClientManager;
-import jakarta.websocket.*;
+import jakarta.websocket.ContainerProvider;
+import jakarta.websocket.Endpoint;
+import jakarta.websocket.EndpointConfig;
+import jakarta.websocket.MessageHandler;
+import jakarta.websocket.Session;
+import jakarta.websocket.WebSocketContainer;
 
+import java.io.IOException;
 import java.net.URI;
+import java.util.Scanner;
 
 public class WebSocketFacade extends Endpoint {
+    public Session session;
 
-    private Session session;
+    public static void main(String[] args) throws Exception {
+        WebSocketFacade client = new WebSocketFacade();
 
-    public WebSocketFacade(String url) {
-        try {
-            URI socketURI = new URI(url.replace("http", "ws") + "/ws");
-            ClientManager client = ClientManager.createClient();
+        Scanner scanner = new Scanner(System.in);
 
-            this.session = client.connectToServer(this, socketURI);
-
-            this.session.addMessageHandler(new MessageHandler.Whole<String>() {
-                @Override
-                public void onMessage(String message) {
-                    System.out.println("Client received PONG: " + message);
-                }
-            });
-
-        } catch (Exception ex) {
-            System.err.println("Connection failed. Did the server start? Error: " + ex.getMessage());
+        System.out.println("Enter a message you want to echo:");
+        while(true) {
+            client.send(scanner.nextLine());
         }
     }
 
-    public void sendPing(String text) {
-        try {
-            System.out.println("Client sending PING: " + text);
-            this.session.getBasicRemote().sendText(text);
-        } catch (Exception ex) {
-            System.err.println("Failed to send message: " + ex.getMessage());
-        }
+    public WebSocketFacade() throws Exception {
+        URI uri = new URI("ws://localhost:8080/ws");
+        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        session = container.connectToServer(this, uri);
+
+        this.session.addMessageHandler(new MessageHandler.Whole<String>() {
+            public void onMessage(String message) {
+                System.out.println(message);
+                System.out.println("\nEnter another message you want to echo:");
+            }
+        });
     }
 
-    @Override
+    public void send(String message) throws IOException {
+        session.getBasicRemote().sendText(message);
+    }
+
+    // This method must be overridden, but we don't have to do anything with it
     public void onOpen(Session session, EndpointConfig endpointConfig) {
-        System.out.println("Client: WebSocket connection established.");
     }
-
 }
