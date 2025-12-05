@@ -135,7 +135,7 @@ public class ChessClient {
             case "help" -> help();
             case "clear" -> clearScreen();
             case "quit" -> quit();
-            case "ping" -> ping();
+            case "ping" -> ping(inputs);
             default -> "Invalid Command, try one of these:\n" + help();
         };
     }
@@ -148,9 +148,9 @@ public class ChessClient {
 
 
         try {
-            //String response = server.ping(inputs[0]);
+            webSocket.ping(inputs[0]);
 
-            return "Line 153";
+            return "";
 
         } catch (HttpResponseException e) {
             return String.format("Ping failed: %s", e.getStatusMessage());

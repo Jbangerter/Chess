@@ -1,11 +1,13 @@
 package client.websocket;
 
+import com.google.gson.Gson;
 import jakarta.websocket.ContainerProvider;
 import jakarta.websocket.Endpoint;
 import jakarta.websocket.EndpointConfig;
 import jakarta.websocket.MessageHandler;
 import jakarta.websocket.Session;
 import jakarta.websocket.WebSocketContainer;
+import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.net.URI;
@@ -32,8 +34,11 @@ public class WebSocketFacade extends Endpoint {
 
         this.session.addMessageHandler(new MessageHandler.Whole<String>() {
             public void onMessage(String message) {
+//                ServerMessage notification = new Gson().fromJson(message, ServerMessage.class);
+//                ResponseHandler.notify(notification);
+                //TODO: Make this actualy process the various kinds of messages and handle those properly
+
                 System.out.println(message);
-                System.out.println("\nEnter another message you want to echo:");
             }
         });
     }
@@ -41,6 +46,11 @@ public class WebSocketFacade extends Endpoint {
     public void send(String message) throws IOException {
         session.getBasicRemote().sendText(message);
     }
+
+    public void ping(String message) throws IOException {
+        session.getBasicRemote().sendText(message);
+    }
+
 
     // This method must be overridden, but we don't have to do anything with it
     public void onOpen(Session session, EndpointConfig endpointConfig) {
