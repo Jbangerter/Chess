@@ -2,6 +2,8 @@ package client;
 
 import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import client.websocket.WebSocketFacade;
 import exceptions.HttpResponseException;
 import model.AuthData;
@@ -23,12 +25,12 @@ public class ChessClient {
     private final ServerFacade server;
     private final WebSocketFacade webSocket;
 
-    private String textColorPrimary = SET_TEXT_COLOR_BLUE;
-    private String textColorSecoundary = SET_TEXT_COLOR_LIGHT_GREY;
+    private final String textColorPrimary = SET_TEXT_COLOR_BLUE;
+    private final String textColorSecoundary = SET_TEXT_COLOR_LIGHT_GREY;
 
-    private String boardEdgeColor = "\u001b[48;5;236m";
-    private String boardWhiteSquare = "\u001b[48;5;121m";
-    private String boardBlackSquare = SET_BG_COLOR_DARK_GREEN;
+    private final String boardEdgeColor = "\u001b[48;5;236m";
+    private final String boardWhiteSquare = "\u001b[48;5;121m";
+    private final String boardBlackSquare = SET_BG_COLOR_DARK_GREEN;
 
     private String currentUser = null;
     private AuthData currentAuthData;
@@ -42,7 +44,7 @@ public class ChessClient {
     private boolean quitLoop = false;
 
 
-    private String[] preLogginHelp = {
+    private final String[] preLogginHelp = {
             textColorPrimary + "Login <USERNAME> <PASSWORD>" + RESET_TEXT_COLOR + " - Login existing user",
             textColorPrimary + "Register <USERNAME> <EMAIL> <PASSWORD>" + RESET_TEXT_COLOR + " - Create new user",
             textColorPrimary + "Help" + RESET_TEXT_COLOR + " - Display this menu",
@@ -50,7 +52,7 @@ public class ChessClient {
 
     };
 
-    private String[] postLogginHelp = {
+    private final String[] postLogginHelp = {
             textColorPrimary + "Create <NAME>" + RESET_TEXT_COLOR + " - Create Game",
             textColorPrimary + "List" + RESET_TEXT_COLOR + " - List availible games",
 
@@ -63,11 +65,20 @@ public class ChessClient {
 
     };
 
-    private String[] inGameHelp = {
-
+    private final String[] inGameHelp = {
             textColorPrimary + "Help" + RESET_TEXT_COLOR + " - Display this menu",
-            textColorPrimary + "Leave" + RESET_TEXT_COLOR + " - Leave current game"
+            textColorPrimary + "Move <START> <END> [Promo]" + RESET_TEXT_COLOR + " - Make a move (e.g., 'move e2 e4')",
+            textColorPrimary + "Highlight <PIECE_LOC>" + RESET_TEXT_COLOR + " - Highlight legal moves (e.g., 'highlight e2')",
+            textColorPrimary + "Redraw" + RESET_TEXT_COLOR + " - Redraw the chess board",
+            textColorPrimary + "Resign" + RESET_TEXT_COLOR + " - Forfeit the game",
+            textColorPrimary + "Leave" + RESET_TEXT_COLOR + " - Leave current game",
+    };
 
+    private final String[] observingHelp = {
+            textColorPrimary + "Help" + RESET_TEXT_COLOR + " - Display this menu",
+            textColorPrimary + "Highlight <PIECE_LOC>" + RESET_TEXT_COLOR + " - Highlight legal moves (e.g., 'highlight e2')",
+            textColorPrimary + "Redraw" + RESET_TEXT_COLOR + " - Redraw the chess board",
+            textColorPrimary + "Leave" + RESET_TEXT_COLOR + " - Leave current game",
     };
 
     public ChessClient(String serverUrl, String webSocketUri) throws Exception {
@@ -104,10 +115,12 @@ public class ChessClient {
 
 
     private String help() {
-        if (loggedIn) {
+        if (loggedIn && !inGame && !observing) {
             return stringMenu(postLogginHelp);
-        } else if (inGame) {
+        } else if (inGame && !observing) {
             return stringMenu(inGameHelp);
+        } else if (!inGame && observing) {
+            return stringMenu(observingHelp);
         } else {
             return stringMenu(preLogginHelp);
         }
@@ -125,17 +138,30 @@ public class ChessClient {
         String[] inputs = Arrays.copyOfRange(tokens, 1, tokens.length);
 
         return switch (command) {
+
+            //Always Avalible
+            case "clear" -> clearScreen();
+            case "help" -> help();
+            case "quit" -> quit();
+
+            //preLogin
             case "login" -> login(inputs);
             case "register" -> register(inputs);
+
+            //post login
             case "create" -> createGame(inputs);
             case "list" -> listGames();
             case "join" -> joinGame(inputs);
             case "observe" -> observeGame(inputs);
             case "logout" -> logout();
-            case "help" -> help();
-            case "clear" -> clearScreen();
-            case "quit" -> quit();
+
+            //Websocket/in game
             case "ping" -> ping(inputs);
+            case "redraw" -> redrawBoard();
+            case "leave" -> leaveGame();
+            case "move" -> makeMove(inputs);
+            case "resign" -> resign();
+            case "highlight" -> highlightLegalMoves(inputs);
             default -> "Invalid Command, try one of these:\n" + help();
         };
     }
@@ -146,14 +172,11 @@ public class ChessClient {
             return "Error: Expected exactly one argument: <message>";
         }
 
-
         try {
             webSocket.ping(inputs[0]);
 
             return "";
 
-        } catch (HttpResponseException e) {
-            return String.format("Ping failed: %s", e.getStatusMessage());
         } catch (Exception e) {
             this.loggedIn = false;
             return String.format("An unexpected error occurred: %s", e.getMessage());
@@ -164,6 +187,10 @@ public class ChessClient {
     public String login(String... inputs) {
         if (inputs.length != 2) {
             return "Error: Expected exactly two arguments: <username> <password>";
+        }
+
+        if (inGame) {
+            return "Warning: You are currently in a game. Please leave the game then try again.";
         }
 
         if (loggedIn) {
@@ -194,6 +221,9 @@ public class ChessClient {
     public String register(String... inputs) {
         if (inputs.length != 3) {
             return "Error: Expected three arguments: <username> <password> <email>";
+        }
+        if (inGame) {
+            return "Warning: You are currently in a game. Please leave the game then try again.";
         }
 
         if (loggedIn) {
@@ -228,7 +258,9 @@ public class ChessClient {
         if (!loggedIn || currentAuthData == null) {
             return "Error: You are not currently logged in.";
         }
-
+        if (inGame) {
+            return "Warning: You are currently in a game. Please leave the game then try again.";
+        }
         try {
             server.logoutUser(currentAuthData.authToken());
             this.currentAuthData = null;
@@ -248,6 +280,10 @@ public class ChessClient {
     }
 
     public String quit() {
+        if (inGame) {
+            return "Warning: You are currently in a game. Please leave the game then try again.";
+        }
+
         logout();
         quitLoop = true;
         return "";
@@ -256,6 +292,10 @@ public class ChessClient {
     public String createGame(String... inputs) {
         if (!loggedIn || currentAuthData == null) {
             return "Error: You must be logged in to create a game.";
+        }
+
+        if (inGame) {
+            return "Warning: You are currently in a game. Please leave the game then try again.";
         }
 
         if (inputs.length != 1) {
@@ -283,7 +323,9 @@ public class ChessClient {
         if (!loggedIn || currentAuthData == null) {
             return "Error: You must be logged in to list games.";
         }
-
+        if (inGame) {
+            return "Warning: You are currently in a game. Please leave the game then try again.";
+        }
         String authToken = currentAuthData.authToken();
 
         try {
@@ -313,7 +355,9 @@ public class ChessClient {
         if (!loggedIn || currentAuthData == null) {
             return "Error: You must be logged in to join a game.";
         }
-
+        if (inGame) {
+            return "Warning: You are currently in a game. Please leave the game then try again.";
+        }
         if (inputs.length != 2) {
             return "Error: Expected two arguments: <gameID> <WHITE|BLACK>";
         }
@@ -365,7 +409,9 @@ public class ChessClient {
         if (!loggedIn || currentAuthData == null) {
             return "Error: You must be logged in to join a game.";
         }
-
+        if (inGame) {
+            return "Warning: You are currently in a game. Please leave the game then try again.";
+        }
         if (inputs.length != 1) {
             return "Error: Expected one argument: <gameID>";
         }
@@ -402,10 +448,117 @@ public class ChessClient {
         }
     }
 
+    public String redrawBoard() {
+        return "";
+    }
+
+    public String leaveGame() {
+        if (!inGame && !observing) {
+            return "Error: You are not currently in a game.";
+        }
+
+        try {
+
+            //TODO: make me work
+
+            this.inGame = false;
+            this.observing = false;
+            this.gameBoard = null; // Clean up local state
+
+            return "Left the game.";
+        } catch (Exception e) {
+            return String.format("Error leaving game: %s", e.getMessage());
+        }
+    }
+
+    public String makeMove(String... inputs) {
+        if (!inGame || observing) {
+            return "Error: You are not currently playing a game.";
+        }
+        if (inputs.length < 2) {
+            return "Error: Expected start and end position (e.g., 'move e2 e4').";
+        }
+
+        ChessPosition startPos = stringToPos(inputs[0]);
+        ChessPosition endPos = stringToPos(inputs[1]);
+        ChessPiece targetPiece = gameBoard.getPiece(startPos);
+
+        if (targetPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
+            if (endPos.getRow() == 8 || endPos.getRow() == 1) {
+                if (inputs.length != 3) {
+                    return "Error: Your move requires a promotion piece (e.g., 'move " + inputs[0] + " " + inputs[1] + "QUEEN";
+                }
+            }
+        }
+
+
+        //TODO: make me work
+
+        try {
+            return "Move sent.";
+        } catch (Exception e) {
+            return String.format("Error making move: %s", e.getMessage());
+        }
+    }
+
+    public String resign() {
+        if (!inGame || observing) {
+            return "Error: You are not currently playing a game.";
+        }
+
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Are you sure you want to resign? (yes/no)");
+        String confirmation = scanner.nextLine().trim().toLowerCase();
+
+        if (!confirmation.equals("yes")) {
+            return "Resignation cancelled.";
+        }
+
+        try {
+            //TODO: make me work
+            return "Resigned.";
+        } catch (Exception e) {
+            return String.format("Error resigning: %s", e.getMessage());
+        }
+    }
+
+    public String highlightLegalMoves(String... inputs) {
+        if (!inGame && !observing) {
+            return "Error: You are not viewing a game.";
+        }
+        if (inputs.length != 1) {
+            return "Error: Expected piece position (e.g., 'highlight e2').";
+        }
+
+        //TODO: make me work
+
+        return "Highlighting moves...";
+    }
 
     private String clearScreen() {
         return "";
     }
+
+    private ChessPosition stringToPos(String stringPos) {
+        if (stringPos == null || stringPos.length() != 2) {
+            throw new IllegalArgumentException("Invalid square notation format: " + stringPos);
+        }
+
+        char colChar = stringPos.charAt(0);
+        char rowChar = stringPos.charAt(1);
+
+        int col = colChar - 'a' + 1;
+
+        int rowValue = Character.getNumericValue(rowChar);
+        int row = rowValue;
+
+        if (col < 1 || col > 8 || row < 1 || row > 8) {
+            throw new IllegalArgumentException("Coordinates out of board range: " + stringPos);
+        }
+
+        return new ChessPosition(row, col);
+    }
+
 
     private String screenFormater(String message) {
         String board = "";
@@ -441,7 +594,7 @@ public class ChessClient {
 
     private String stringBoard(ChessBoard board) {
         var boardArray = board.boardAsArray();
-        String stringBoard[][] = new String[10][10];
+        String[][] stringBoard = new String[10][10];
 
         String[] columnLabels = {"   ", " a ", " b ", " c ", " d ", " e ", " f ", " g ", " h ", "   "};
         String[] rowLabels = {"   ", " 8 ", " 7 ", " 6 ", " 5 ", " 4 ", " 3 ", " 2 ", " 1 ", "   "};
