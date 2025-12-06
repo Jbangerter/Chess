@@ -28,11 +28,13 @@ public class Server {
     private GameService gameService;
 
     public Server() {
-        webSocketHandler = new WebSocketHandler();
+
 
         dataAccess = new SqlDataAccess();
         userService = new UserService(dataAccess);
         gameService = new GameService(dataAccess);
+
+        webSocketHandler = new WebSocketHandler(dataAccess);
 
         //javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
