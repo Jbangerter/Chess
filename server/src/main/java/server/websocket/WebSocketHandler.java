@@ -10,20 +10,18 @@ import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsConnectHandler;
 import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
-import model.AuthData;
 import org.jetbrains.annotations.NotNull;
 import service.GameService;
 import service.UserService;
 import websocket.commands.*;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import org.eclipse.jetty.websocket.api.Session;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
@@ -31,12 +29,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private final ConnectionManager connectionManager = new ConnectionManager();
     ;
     private final Map<Session, Integer> sessionGameMap = new ConcurrentHashMap<>();
+
+    private UserService userService;
+    private GameService gameService;
     private final SqlDataAccess dataAccess;
 
-
-    public WebSocketHandler(SqlDataAccess dataAccess) {
+    public WebSocketHandler(UserService userService, GameService gameService, SqlDataAccess dataAccess) {
+        this.userService = userService;
+        this.gameService = gameService;
         this.dataAccess = dataAccess;
     }
+
 
     @Override
     public void handleConnect(@NotNull WsConnectContext ctx) {
@@ -73,14 +76,25 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void connect(Session session, String jsonMessage) throws Exception {
         JoinGameCommand command = gson.fromJson(jsonMessage, JoinGameCommand.class);
 
-        connectionManager.add(command.getGameID(), session);
+        if(!dataAccess.authTokenExists(command.getAuthToken())){
+            session.getRemote().sendString(gson.toJson(new ErrorMessage(ServerMessage.ServerMessageType.ERROR,"Error: Unauthorized user data please login again")));
+            throw new Exception("Error: Unauthorized user data please login again");
+        }
+        if(!dataAccess.gameIDExists(command.getGameID())){
+            session.getRemote().sendString(gson.toJson(new ErrorMessage(ServerMessage.ServerMessageType.ERROR,"Error: Invalid Game ID")));
+            throw new Exception("Error: Invalid Game ID");
+        }
 
+
+        connectionManager.add(command.getGameID(), session);
         sessionGameMap.put(session, command.getGameID());
 
+        ChessGame game = dataAccess.getGame(command.getGameID()).game();
+
         //TODO: pull actual game data
-        ChessGame game = new ChessGame();
-        game.setBoard(new ChessBoard());
-        game.getBoard().resetBoard();
+//        ChessGame game = new ChessGame();
+//        game.setBoard(new ChessBoard());
+//        game.getBoard().resetBoard();0
 
         //respond to inital person
         ServerMessage loadGameMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
