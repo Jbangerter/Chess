@@ -239,14 +239,29 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
         var gameData = dataAccess.getGame(command.getGameID());
 
-        gameData.game().setGameOver();
-        dataAccess.updateGame(gameData);
 
-        var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, user.username() + "has resigned the game");
-        connectionManager.broadcast(command.getGameID(), notification, null);
-        
-        connectionManager.remove(command.getGameID(), session);
-        sessionGameMap.remove(session);
+        if (gameData.game().isGameOver()) {
+            ServerMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "The game is over, you cannot resign.");
+            session.getRemote().sendString(gson.toJson(errorMessage));
+
+        } else if (Objects.equals(user.username(), gameData.whiteUsername()) || Objects.equals(user.username(), gameData.blackUsername())) {
+            var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, user.username() + "has resigned the game");
+            connectionManager.broadcast(command.getGameID(), notification, null);
+
+            gameData.game().setGameOver();
+            dataAccess.updateGame(gameData);
+
+            connectionManager.remove(command.getGameID(), session);
+            sessionGameMap.remove(session);
+        } else {
+            ServerMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "You are an observer and cannot resign, if you want to leave use the leave command");
+            session.getRemote().sendString(gson.toJson(errorMessage));
+
+            connectionManager.remove(command.getGameID(), session);
+            sessionGameMap.remove(session);
+        }
+
+
     }
 
 
