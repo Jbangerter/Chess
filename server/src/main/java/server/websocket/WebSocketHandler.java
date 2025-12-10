@@ -82,21 +82,24 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void connect(Session session, String jsonMessage) throws Exception {
         JoinGameCommand command = gson.fromJson(jsonMessage, JoinGameCommand.class);
 
-        verifyInput(session, command);
+        try {
+            verifyInput(session, command);
+        } catch (Exception e) {
+            ServerMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
+            session.getRemote().sendString(gson.toJson(errorMessage));
+            throw new InvalidMoveException(e.getMessage());
+        }
 
         connectionManager.add(command.getGameID(), session);
         sessionGameMap.put(session, command.getGameID());
-
 
         var game = dataAccess.getGame(command.getGameID());
 
         var user = dataAccess.getUser(dataAccess.getAuthdataFromAuthtoken(command.getAuthToken()).username());
 
-
         //respond to inital person
         ServerMessage loadGameMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
         session.getRemote().sendString(gson.toJson(loadGameMessage));
-
 
         //notify other people in game
         var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, user.username() + " joined as " + command.getRole());
@@ -221,7 +224,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void resign(Session session, String jsonMessage) throws Exception {
-        command = gson.fromJson(jsonMessage, LeaveGameCommand.class);
+        ReseignGameCommand command = gson.fromJson(jsonMessage, ReseignGameCommand.class);
 
         try {
             verifyInput(session, command);
@@ -230,25 +233,28 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             session.getRemote().sendString(gson.toJson(errorMessage));
             throw new InvalidMoveException(e.getMessage());
         }
+
+
         var user = dataAccess.getUser(dataAccess.getAuthdataFromAuthtoken(command.getAuthToken()).username());
 
+        var gameData = dataAccess.getGame(command.getGameID());
+
+        gameData.game().setGameOver();
+        dataAccess.updateGame(gameData);
+
+        var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, user.username() + "has resigned the game");
+        connectionManager.broadcast(command.getGameID(), notification, null);
+        
         connectionManager.remove(command.getGameID(), session);
         sessionGameMap.remove(session);
-
-        var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, user.username() + "has left the game");
-        connectionManager.broadcast(command.getGameID(), notification, session);
     }
 
 
     private void verifyInput(Session session, UserGameCommand command) throws Exception {
         if (!dataAccess.authTokenExists(command.getAuthToken())) {
-            ServerMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: Invalid user info");
-            session.getRemote().sendString(gson.toJson(errorMessage));
             throw new Exception("Error: Unauthorized user data please login again");
         }
         if (!dataAccess.gameIDExists(command.getGameID())) {
-            ServerMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: Invalid game ID");
-            session.getRemote().sendString(gson.toJson(errorMessage));
             throw new Exception("Error: Invalid Game ID");
         }
 
