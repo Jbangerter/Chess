@@ -164,7 +164,6 @@ public class ChessClient implements MessageObserver {
         if (inGame) {
             return "Warning: You are currently in a game. Please leave the game then try again.";
         }
-
         if (loggedIn) {
             logout();
         }
