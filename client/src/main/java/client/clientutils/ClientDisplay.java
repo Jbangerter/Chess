@@ -42,7 +42,8 @@ public class ClientDisplay {
     }
 
 
-    public String screenFormater(String currentUser, ChessGame.TeamColor userColor, ChessBoard gameBoard, boolean loggedIn, boolean inGame, boolean observing, String message) {
+    public String screenFormater(String currentUser, ChessGame.TeamColor userColor, ChessBoard gameBoard,
+                                 boolean loggedIn, boolean inGame, boolean observing, String message) {
         this.currentUser = currentUser;
         this.userColor = userColor;
         this.gameBoard = gameBoard;
@@ -73,7 +74,8 @@ public class ClientDisplay {
     }
 
 
-    public String screenFormater(String currentUser, ChessGame.TeamColor userColor, ChessBoard gameBoard, boolean loggedIn, boolean inGame, boolean observing) {
+    public String screenFormater(String currentUser, ChessGame.TeamColor userColor, ChessBoard gameBoard,
+                                 boolean loggedIn, boolean inGame, boolean observing) {
         return screenFormater(currentUser, userColor, gameBoard, loggedIn, inGame, observing, "");
     }
 
