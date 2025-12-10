@@ -87,7 +87,6 @@ public class ChessClient implements MessageObserver {
         server = new ServerFacade(serverUrl);
         webSocket = new WebSocketFacade(webSocketUri, this);
         gameBoard.resetBoard();
-
     }
 
     public void run() {
