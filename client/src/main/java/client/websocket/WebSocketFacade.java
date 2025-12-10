@@ -41,15 +41,7 @@ public class WebSocketFacade {
         }
     }
 
-//    @OnOpen
-//    public void onOpen(Session session) {
-//         System.out.println("Connected to WebSocket server");
-//    }
 
-//    @OnError
-//    public void onError(Session session, Throwable throwable) {
-//        System.err.println("WebSocket error: " + throwable.getMessage());
-//    }
 
 
     private void sendCommand(UserGameCommand command) throws IOException {

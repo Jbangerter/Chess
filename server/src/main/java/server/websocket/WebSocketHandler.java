@@ -85,8 +85,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         try {
             verifyInput(session, command);
         } catch (Exception e) {
-            ServerMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
-            session.getRemote().sendString(gson.toJson(errorMessage));
+            ServerMessage connectErrorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
+            session.getRemote().sendString(gson.toJson(connectErrorMessage));
             throw new InvalidMoveException(e.getMessage());
         }
 
@@ -146,24 +146,29 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
         if (game.isInCheck(ChessGame.TeamColor.BLACK)) {
             if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
-                var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, moveMessage + blackUsername + " is in checkmate, " + whiteUsername + " wins.");
+                var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                        moveMessage + blackUsername + " is in checkmate, " + whiteUsername + " wins.");
                 connectionManager.broadcast(command.getGameID(), notification, session);
                 game.setGameOver();
             } else {
-                var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, moveMessage + blackUsername + " is in check");
+                var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                        moveMessage + blackUsername + " is in check");
                 connectionManager.broadcast(command.getGameID(), notification, session);
             }
         } else if (game.isInCheck(ChessGame.TeamColor.WHITE)) {
             if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
-                var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, moveMessage + whiteUsername + " is in checkmate, " + blackUsername + " wins.");
+                var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                        moveMessage + whiteUsername + " is in checkmate, " + blackUsername + " wins.");
                 connectionManager.broadcast(command.getGameID(), notification, session);
                 game.setGameOver();
             } else {
-                var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, moveMessage + whiteUsername + " is in check");
+                var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                        moveMessage + whiteUsername + " is in check");
                 connectionManager.broadcast(command.getGameID(), notification, session);
             }
         } else if (game.isInStalemate(ChessGame.TeamColor.BLACK) || game.isInStalemate(ChessGame.TeamColor.WHITE)) {
-            var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, moveMessage + "The game is a stalemate and has ended in a draw");
+            var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                    moveMessage + "The game is a stalemate and has ended in a draw");
             connectionManager.broadcast(command.getGameID(), notification, session);
             game.setGameOver();
         } else {
@@ -267,7 +272,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             connectionManager.remove(command.getGameID(), session);
             sessionGameMap.remove(session);
         } else {
-            ServerMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "You are an observer and cannot resign, if you want to leave use the leave command");
+            ServerMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
+                    "You are an observer and cannot resign, if you want to leave use the leave command");
             session.getRemote().sendString(gson.toJson(errorMessage));
 
             connectionManager.remove(command.getGameID(), session);
