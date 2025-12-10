@@ -85,7 +85,7 @@ public class ChessClient implements MessageObserver {
 
     public ChessClient(String serverUrl, String webSocketUri) throws Exception {
         server = new ServerFacade(serverUrl);
-        webSocket = new WebSocketFacade(webSocketUri);
+        webSocket = new WebSocketFacade(webSocketUri, this);
         gameBoard.resetBoard();
 
     }
@@ -175,7 +175,7 @@ public class ChessClient implements MessageObserver {
         }
 
         try {
-            webSocket.ping(inputs[0]);
+            //webSocket.ping(inputs[0]);
 
             return "";
 
