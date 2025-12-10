@@ -213,7 +213,21 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             session.getRemote().sendString(gson.toJson(errorMessage));
             throw new InvalidMoveException(e.getMessage());
         }
+
         var user = dataAccess.getUser(dataAccess.getAuthdataFromAuthtoken(command.getAuthToken()).username());
+        var gameData = dataAccess.getGame(command.getGameID());
+        GameData newGameData;
+
+        if (Objects.equals(gameData.blackUsername(), user.username())) {
+            newGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), null, gameData.gameName(), gameData.game());
+        } else if (Objects.equals(gameData.whiteUsername(), user.username())) {
+            newGameData = new GameData(gameData.gameID(), null, gameData.blackUsername(), gameData.gameName(), gameData.game());
+        } else {
+            newGameData = gameData;
+        }
+
+
+        dataAccess.updateGame(newGameData);
 
         connectionManager.remove(command.getGameID(), session);
         sessionGameMap.remove(session);
@@ -236,7 +250,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
 
         var user = dataAccess.getUser(dataAccess.getAuthdataFromAuthtoken(command.getAuthToken()).username());
-
         var gameData = dataAccess.getGame(command.getGameID());
 
 
