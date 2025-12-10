@@ -114,7 +114,6 @@ public class ChessClient implements MessageObserver {
             case "logout" -> logout();
 
             //Websocket/in game
-            case "ping" -> ping(inputs);
             case "redraw" -> redrawBoard();
             case "leave" -> leaveGame();
             case "move" -> makeMove(inputs);
@@ -123,8 +122,7 @@ public class ChessClient implements MessageObserver {
             default -> "Invalid Command, try one of these:\n" + help();
         };
     }
-
-
+    
     public String login(String... inputs) {
         if (inputs.length != 2) {
             return "Error: Expected exactly two arguments: <username> <password>";
