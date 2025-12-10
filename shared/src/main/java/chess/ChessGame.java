@@ -16,11 +16,13 @@ public class ChessGame {
 
     TeamColor teamTurn;
     ChessBoard board;
+    private boolean gameOver;
 
     public ChessGame() {
         teamTurn = TeamColor.WHITE;
         board = new ChessBoard();
         board.resetBoard();
+        gameOver = false;
     }
 
     /**
@@ -37,6 +39,15 @@ public class ChessGame {
      */
     public void setTeamTurn(TeamColor team) {
         teamTurn = team;
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+
+    public void setGameOver() {
+        gameOver = true;
     }
 
     /**
@@ -277,6 +288,18 @@ public class ChessGame {
         return board;
     }
 
+
+    public ChessGame deepCopy() {
+        ChessGame copy = new ChessGame();
+
+        copy.setBoard(this.board.deepCopy());
+
+        copy.setTeamTurn(this.teamTurn);
+
+        copy.gameOver = this.gameOver;
+
+        return copy;
+    }
 
     @Override
     public boolean equals(Object o) {

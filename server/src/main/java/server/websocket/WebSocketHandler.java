@@ -1,8 +1,10 @@
 package server.websocket;
 
-import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import dataaccess.SqlDataAccess;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsCloseHandler;
@@ -10,6 +12,8 @@ import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsConnectHandler;
 import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
+import model.GameData;
+import model.UserData;
 import org.jetbrains.annotations.NotNull;
 import service.GameService;
 import service.UserService;
@@ -21,13 +25,15 @@ import websocket.messages.ServerMessage;
 
 import org.eclipse.jetty.websocket.api.Session;
 
+import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
     private final Gson gson = new Gson();
     private final ConnectionManager connectionManager = new ConnectionManager();
-    ;
+
     private final Map<Session, Integer> sessionGameMap = new ConcurrentHashMap<>();
 
     private UserService userService;
@@ -76,25 +82,16 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void connect(Session session, String jsonMessage) throws Exception {
         JoinGameCommand command = gson.fromJson(jsonMessage, JoinGameCommand.class);
 
-        if(!dataAccess.authTokenExists(command.getAuthToken())){
-            session.getRemote().sendString(gson.toJson(new ErrorMessage(ServerMessage.ServerMessageType.ERROR,"Error: Unauthorized user data please login again")));
-            throw new Exception("Error: Unauthorized user data please login again");
-        }
-        if(!dataAccess.gameIDExists(command.getGameID())){
-            session.getRemote().sendString(gson.toJson(new ErrorMessage(ServerMessage.ServerMessageType.ERROR,"Error: Invalid Game ID")));
-            throw new Exception("Error: Invalid Game ID");
-        }
-
+        verifyInput(session, command);
 
         connectionManager.add(command.getGameID(), session);
         sessionGameMap.put(session, command.getGameID());
 
-        ChessGame game = dataAccess.getGame(command.getGameID()).game();
 
-        //TODO: pull actual game data
-//        ChessGame game = new ChessGame();
-//        game.setBoard(new ChessBoard());
-//        game.getBoard().resetBoard();0
+        var game = dataAccess.getGame(command.getGameID());
+
+        var user = dataAccess.getUser(dataAccess.getAuthdataFromAuthtoken(command.getAuthToken()).username());
+
 
         //respond to inital person
         ServerMessage loadGameMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
@@ -102,33 +99,159 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
 
         //notify other people in game
-        var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "A Thing Happened");
+        var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, user.username() + " joined as " + command.getRole());
         connectionManager.broadcast(command.getGameID(), notification, session);
     }
 
     private void makeMove(Session session, String jsonMessage) throws Exception {
         MakeMoveCommand command = gson.fromJson(jsonMessage, MakeMoveCommand.class);
 
-        // Logic: Validate move, update database game state...
+        try {
+            verifyInput(session, command);
+        } catch (Exception e) {
+            ServerMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
+            session.getRemote().sendString(gson.toJson(errorMessage));
+            throw new InvalidMoveException(e.getMessage());
+        }
 
-        // Broadcast the new board state to EVERYONE in that game
-        // (Assuming you fetch the updated game from the DB here)
-        ChessGame updatedGame = new ChessGame(); // Placeholder
-        LoadGameMessage loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, updatedGame);
+        var gameData = dataAccess.getGame(command.getGameID());
+        var user = dataAccess.getUser(dataAccess.getAuthdataFromAuthtoken(command.getAuthToken()).username());
 
-        // Pass 'null' as the third arg if you want the person who moved to also get the update
-        connectionManager.broadcast(command.getGameID(), loadGame, null);
+        try {
+            validateMove(gameData, user, command.getMove());
+        } catch (InvalidMoveException e) {
+            ServerMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
+            session.getRemote().sendString(gson.toJson(errorMessage));
+            throw new InvalidMoveException(e.getMessage());
+        }
+
+        announceGameStatus(command, gameData, session);
+        dataAccess.updateGame(gameData);
     }
 
-    private void leave(Session session, String jsonMessage) {
+    private void announceGameStatus(MakeMoveCommand command, GameData gameData, Session session) throws IOException, DataAccessException {
+        var game = gameData.game();
+        var user = dataAccess.getUser(dataAccess.getAuthdataFromAuthtoken(command.getAuthToken()).username());
+        var blackUsername = gameData.blackUsername();
+        var whiteUsername = gameData.whiteUsername();
+        var moveMessage = user.username() + " moved: " + command.getMove().toString() + "\n";
+
+
+        LoadGameMessage loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData);
+        connectionManager.broadcast(command.getGameID(), loadGame, null);
+
+
+        if (game.isInCheck(ChessGame.TeamColor.BLACK)) {
+            if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
+                var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, moveMessage + blackUsername + " is in checkmate, " + whiteUsername + " wins.");
+                connectionManager.broadcast(command.getGameID(), notification, session);
+                game.setGameOver();
+            } else {
+                var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, moveMessage + blackUsername + " is in check");
+                connectionManager.broadcast(command.getGameID(), notification, session);
+            }
+        } else if (game.isInCheck(ChessGame.TeamColor.WHITE)) {
+            if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
+                var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, moveMessage + whiteUsername + " is in checkmate, " + blackUsername + " wins.");
+                connectionManager.broadcast(command.getGameID(), notification, session);
+                game.setGameOver();
+            } else {
+                var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, moveMessage + whiteUsername + " is in check");
+                connectionManager.broadcast(command.getGameID(), notification, session);
+            }
+        } else if (game.isInStalemate(ChessGame.TeamColor.BLACK) || game.isInStalemate(ChessGame.TeamColor.WHITE)) {
+            var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, moveMessage + "The game is a stalemate and has ended in a draw");
+            connectionManager.broadcast(command.getGameID(), notification, session);
+            game.setGameOver();
+        } else {
+            var moveNotification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, moveMessage);
+            connectionManager.broadcast(command.getGameID(), moveNotification, session);
+        }
+
+
+    }
+
+    private void validateMove(GameData gameData, UserData user, ChessMove move) throws InvalidMoveException {
+        ChessGame.TeamColor movedPieceColor = gameData.game().getBoard().getPiece(move.getStartPosition()).getTeamColor();
+        ChessGame game = gameData.game();
+        ChessGame gameAfterMove = game.deepCopy();
+
+
+        if (game.isGameOver()) {
+            throw new InvalidMoveException("Game is over, No further moves may be played");
+        }
+        if (movedPieceColor == ChessGame.TeamColor.BLACK) {
+            if (!Objects.equals(user.username(), gameData.blackUsername())) {
+                throw new InvalidMoveException(move + " Targets a " + movedPieceColor + " piece.");
+            }
+        }
+        if (movedPieceColor == ChessGame.TeamColor.WHITE) {
+            if (!Objects.equals(user.username(), gameData.whiteUsername())) {
+                throw new InvalidMoveException(move + " Targets a " + movedPieceColor + " piece.");
+            }
+        }
+
+        gameAfterMove.makeMove(move);
+
+        if (gameAfterMove.isInCheck(movedPieceColor)) {
+            throw new InvalidMoveException(move + "places you in check");
+        }
+
+        game.makeMove(move);
+    }
+
+    private void leave(Session session, String jsonMessage) throws Exception {
         LeaveGameCommand command = gson.fromJson(jsonMessage, LeaveGameCommand.class);
+
+        try {
+            verifyInput(session, command);
+        } catch (Exception e) {
+            ServerMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
+            session.getRemote().sendString(gson.toJson(errorMessage));
+            throw new InvalidMoveException(e.getMessage());
+        }
+        var user = dataAccess.getUser(dataAccess.getAuthdataFromAuthtoken(command.getAuthToken()).username());
+
         connectionManager.remove(command.getGameID(), session);
         sessionGameMap.remove(session);
-        // broadcast notification that user left...
+
+        var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, user.username() + "has left the game");
+        connectionManager.broadcast(command.getGameID(), notification, session);
+
     }
 
-    private void resign(Session session, String jsonMessage) {
-        // Resignation logic...
+    private void resign(Session session, String jsonMessage) throws Exception {
+        command = gson.fromJson(jsonMessage, LeaveGameCommand.class);
+
+        try {
+            verifyInput(session, command);
+        } catch (Exception e) {
+            ServerMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
+            session.getRemote().sendString(gson.toJson(errorMessage));
+            throw new InvalidMoveException(e.getMessage());
+        }
+        var user = dataAccess.getUser(dataAccess.getAuthdataFromAuthtoken(command.getAuthToken()).username());
+
+        connectionManager.remove(command.getGameID(), session);
+        sessionGameMap.remove(session);
+
+        var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, user.username() + "has left the game");
+        connectionManager.broadcast(command.getGameID(), notification, session);
+    }
+
+
+    private void verifyInput(Session session, UserGameCommand command) throws Exception {
+        if (!dataAccess.authTokenExists(command.getAuthToken())) {
+            ServerMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: Invalid user info");
+            session.getRemote().sendString(gson.toJson(errorMessage));
+            throw new Exception("Error: Unauthorized user data please login again");
+        }
+        if (!dataAccess.gameIDExists(command.getGameID())) {
+            ServerMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: Invalid game ID");
+            session.getRemote().sendString(gson.toJson(errorMessage));
+            throw new Exception("Error: Invalid Game ID");
+        }
+
     }
 //    @Override
 //    public void handleMessage(@NotNull WsMessageContext ctx) {
