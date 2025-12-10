@@ -202,7 +202,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         gameAfterMove.makeMove(move);
 
         if (gameAfterMove.isInCheck(movedPieceColor)) {
-            throw new InvalidMoveException(move + "places you in check");
+            throw new InvalidMoveException(move + " places you in check");
         }
 
         game.makeMove(move);
@@ -237,7 +237,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connectionManager.remove(command.getGameID(), session);
         sessionGameMap.remove(session);
 
-        var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, user.username() + "has left the game");
+        var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, user.username() + " has left the game");
         connectionManager.broadcast(command.getGameID(), notification, session);
 
     }

@@ -86,8 +86,6 @@ public class ChessGame {
             }
         }
 
-
-        System.out.println(legalMoves);
         return legalMoves;
     }
 

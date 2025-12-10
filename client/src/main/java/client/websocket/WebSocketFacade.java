@@ -30,18 +30,12 @@ public class WebSocketFacade {
     @OnMessage
     public void onMessage(String message) {
         try {
-            // Deserialize the JSON string into a ServerMessage object
-            ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
-
-            // Pass the message to observer
-            observer.notify(serverMessage);
+            observer.notify(message);
 
         } catch (Exception e) {
             System.err.println("Failed to handle message: " + e.getMessage());
         }
     }
-
-
 
 
     private void sendCommand(UserGameCommand command) throws IOException {

@@ -3,6 +3,7 @@ package client;
 import chess.*;
 import client.clientutils.ClientDisplay;
 import client.websocket.WebSocketFacade;
+import com.google.gson.Gson;
 import exceptions.HttpResponseException;
 import model.AuthData;
 import model.UserData;
@@ -325,6 +326,7 @@ public class ChessClient implements MessageObserver {
             inGame = true;
             observing = false;
             userColor = playerTeamColor;
+            currentGameID = gameId;
 
             webSocket.joinPlayer(currentAuthData.authToken(), currentGameID, userColor);
 
@@ -334,11 +336,13 @@ public class ChessClient implements MessageObserver {
             gameBoard = new ChessBoard();
             inGame = false;
             userColor = null;
+            currentGameID = -1;
             return String.format("Joining game failed: %s", e.getStatusMessage());
         } catch (Exception e) {
             gameBoard = new ChessBoard();
             inGame = false;
             userColor = null;
+            currentGameID = -1;
             return String.format("An unexpected error occurred: %s", e.getMessage());
         }
     }
@@ -389,6 +393,7 @@ public class ChessClient implements MessageObserver {
     }
 
     public String redrawBoard() {
+        display.setPrintBoard(true);
         return "";
     }
 
@@ -397,9 +402,6 @@ public class ChessClient implements MessageObserver {
             return "Error: You are not currently in a game.";
         }
         try {
-
-            //TODO: make me work
-
             this.inGame = false;
             this.observing = false;
             this.gameBoard = null; // Clean up local state
@@ -429,10 +431,12 @@ public class ChessClient implements MessageObserver {
                 if (inputs.length != 3) {
                     return "Error: Your move requires a promotion piece (e.g., 'move " + inputs[0] + " " + inputs[1] + "QUEEN";
                 }
+                ChessMove move = new ChessMove(startPos, endPos, new ChessPiece(userColor, inputs[2]).getPieceType());
+
             }
         }
 
-        ChessMove move = new ChessMove(startPos, endPos, new ChessPiece(userColor, inputs[2]).getPieceType());
+        ChessMove move = new ChessMove(startPos, endPos, null);
 
         //TODO: make me work
 
@@ -473,8 +477,10 @@ public class ChessClient implements MessageObserver {
             return "Error: Expected piece position (e.g., 'highlight e2').";
         }
 
-        //TODO: make me work
-
+        var game = new ChessGame();
+        game.setBoard(gameBoard);
+        display.validMoves = game.validMoves(display.stringToPos(inputs[0]));
+        display.setPrintBoard(true);
         return "Highlighting moves...";
     }
 
@@ -482,15 +488,38 @@ public class ChessClient implements MessageObserver {
         return "";
     }
 
+
     @Override
-    public void notify(ServerMessage message) {
-        switch (message.getServerMessageType()) {
-            case LOAD_GAME:
-                break;
-            case ERROR:
-                break;
-            case NOTIFICATION:
-                break;
+    public void notify(String message) {
+        try {
+            Gson gson = new Gson();
+            ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
+
+            switch (serverMessage.getServerMessageType()) {
+                case NOTIFICATION:
+                    websocket.messages.NotificationMessage notification = gson.fromJson(message, websocket.messages.NotificationMessage.class);
+                    System.out.println("\n" + SET_TEXT_COLOR_YELLOW + notification.getMessage() + RESET_TEXT_COLOR);
+                    break;
+
+                case LOAD_GAME:
+                    websocket.messages.LoadGameMessage loadGame = gson.fromJson(message, websocket.messages.LoadGameMessage.class);
+                    this.gameBoard = loadGame.getGame().getBoard();
+                    display.setPrintBoard(true);
+                    System.out.println(display.screenFormater(currentUser, userColor, gameBoard, loggedIn, inGame, observing, "Board updated by server."));
+                    break;
+
+                case ERROR:
+                    websocket.messages.ErrorMessage error = gson.fromJson(message, websocket.messages.ErrorMessage.class);
+                    System.out.println("\n" + SET_TEXT_COLOR_RED + "ERROR: " + error.getErrorMessage() + RESET_TEXT_COLOR);
+                    break;
+            }
+
+            System.out.print(display.screenFormater(currentUser, userColor, gameBoard, loggedIn, inGame, observing));
+
+        } catch (Exception e) {
+            System.out.println("\n" + SET_TEXT_COLOR_RED + "Failed to parse WebSocket message: " + e.getMessage() + RESET_TEXT_COLOR);
+            System.out.print(display.screenFormater(currentUser, userColor, gameBoard, loggedIn, inGame, observing));
         }
     }
+
 }

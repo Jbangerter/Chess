@@ -2,7 +2,11 @@ package client.clientutils;
 
 import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessMove;
 import chess.ChessPosition;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static chess.EscapeSequences.*;
 import static chess.EscapeSequences.SET_BG_COLOR_DARK_GREEN;
@@ -16,9 +20,15 @@ public class ClientDisplay {
     private final String boardEdgeColor = "\u001b[48;5;236m";
     private final String boardWhiteSquare = "\u001b[48;5;121m";
     private final String boardBlackSquare = SET_BG_COLOR_DARK_GREEN;
-    private String currentUser;
+
+    private final String boardHighlightWhiteSquare = "\u001b[48;5;111m";
+    private final String boardHighlightBlackSquare = "\u001b[48;5;105m";
+
+    public Collection<ChessMove> validMoves = new ArrayList<>();
     private ChessGame.TeamColor userColor;
     private ChessBoard gameBoard;
+    private ChessBoard oldGameBoard;
+    private Boolean printBoard = false;
 
 
     public ChessPosition stringToPos(String stringPos) {
@@ -44,10 +54,11 @@ public class ClientDisplay {
 
     public String screenFormater(String currentUser, ChessGame.TeamColor userColor, ChessBoard gameBoard,
                                  boolean loggedIn, boolean inGame, boolean observing, String message) {
-        this.currentUser = currentUser;
         this.userColor = userColor;
         this.gameBoard = gameBoard;
         String board = "";
+
+
         if (gameBoard != null && (inGame || observing)) {
             board = ERASE_SCREEN + stringBoard(gameBoard) + "\n\n";
         }
@@ -70,7 +81,15 @@ public class ClientDisplay {
             outputIndicator = "[" + SET_TEXT_COLOR_RED + "LOGGED_OUT" + RESET_TEXT_COLOR + "] >>> ";
         }
 
-        return board + contentsCheckedForNull + outputIndicator;
+
+        if (printBoard) {
+            printBoard = false;
+            return board + contentsCheckedForNull + outputIndicator;
+        } else {
+            return contentsCheckedForNull + outputIndicator;
+        }
+
+
     }
 
 
@@ -83,6 +102,15 @@ public class ClientDisplay {
         var boardArray = board.boardAsArray();
         String[][] stringBoard = new String[10][10];
 
+        Collection<ChessPosition> highlightPositions = new ArrayList<>();
+
+        if (!validMoves.isEmpty()) {
+            for (ChessMove move : validMoves) {
+                highlightPositions.add(move.getStartPosition());
+                highlightPositions.add(move.getEndPosition());
+            }
+        }
+
         String[] columnLabels = {"   ", " a ", " b ", " c ", " d ", " e ", " f ", " g ", " h ", "   "};
         String[] rowLabels = {"   ", " 8 ", " 7 ", " 6 ", " 5 ", " 4 ", " 3 ", " 2 ", " 1 ", "   "};
 
@@ -93,13 +121,23 @@ public class ClientDisplay {
                 } else if (col == 0 || col == 9) {
                     stringBoard[row][col] = boardEdgeColor + rowLabels[row] + RESET_BG_COLOR;
                 } else if ((row + col) % 2 == 1) {
-                    stringBoard[row][col] = boardBlackSquare + boardArray[row - 1][col - 1] + RESET_BG_COLOR;
+                    if (highlightPositions.contains(new ChessPosition(9 - row, col))) {
+                        stringBoard[row][col] = boardHighlightBlackSquare + boardArray[row - 1][col - 1] + RESET_BG_COLOR;
+                    } else {
+                        stringBoard[row][col] = boardBlackSquare + boardArray[row - 1][col - 1] + RESET_BG_COLOR;
+                    }
                 } else {
-                    stringBoard[row][col] = boardWhiteSquare + boardArray[row - 1][col - 1] + RESET_BG_COLOR;
+                    if (highlightPositions.contains(new ChessPosition(9 - row, col))) {
+                        stringBoard[row][col] = boardHighlightWhiteSquare + boardArray[row - 1][col - 1] + RESET_BG_COLOR;
+                    } else {
+                        stringBoard[row][col] = boardWhiteSquare + boardArray[row - 1][col - 1] + RESET_BG_COLOR;
+                    }
                 }
 
             }
         }
+
+        validMoves.clear();
 
         if (userColor == ChessGame.TeamColor.BLACK) {
             flipBoard(stringBoard);
@@ -191,6 +229,10 @@ public class ClientDisplay {
 
     public String[] getObservingHelp() {
         return observingHelp;
+    }
+
+    public void setPrintBoard(Boolean printBoard) {
+        this.printBoard = printBoard;
     }
 }
 
