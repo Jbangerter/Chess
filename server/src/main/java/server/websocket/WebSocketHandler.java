@@ -123,8 +123,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         try {
             validateMove(gameData, user, command.getMove());
         } catch (InvalidMoveException e) {
-            ServerMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
-            session.getRemote().sendString(gson.toJson(errorMessage));
+            ServerMessage moveErrorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
+            session.getRemote().sendString(gson.toJson(moveErrorMessage));
             throw new InvalidMoveException(e.getMessage());
         }
 
@@ -209,8 +209,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         try {
             verifyInput(session, command);
         } catch (Exception e) {
-            ServerMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
-            session.getRemote().sendString(gson.toJson(errorMessage));
+            ServerMessage leaveErrorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
+            session.getRemote().sendString(gson.toJson(leaveErrorMessage));
             throw new InvalidMoveException(e.getMessage());
         }
 
@@ -243,8 +243,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         try {
             verifyInput(session, command);
         } catch (Exception e) {
-            ServerMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
-            session.getRemote().sendString(gson.toJson(errorMessage));
+            ServerMessage resignErrorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
+            session.getRemote().sendString(gson.toJson(resignErrorMessage));
             throw new InvalidMoveException(e.getMessage());
         }
 

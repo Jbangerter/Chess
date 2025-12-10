@@ -22,6 +22,22 @@ public class ChessPiece {
         this.type = type;
     }
 
+    public ChessPiece(ChessGame.TeamColor pieceColor, String pieceType) {
+        this.pieceColor = pieceColor;
+
+        var pieceAsLower = pieceType.toLowerCase();
+
+        switch (pieceAsLower) {
+            case "king" -> this.type = PieceType.KING;
+            case "queen" -> this.type = PieceType.QUEEN;
+            case "rook" -> this.type = PieceType.ROOK;
+            case "bishop" -> this.type = PieceType.BISHOP;
+            case "knight" -> this.type = PieceType.KNIGHT;
+            case "pawn" -> this.type = PieceType.PAWN;
+            default -> throw new IllegalArgumentException("Invalid piece type: " + pieceType);
+        }
+    }
+
 
     public String getPieceSymbol() {
         String whiteColor = SET_TEXT_COLOR_BLACK;

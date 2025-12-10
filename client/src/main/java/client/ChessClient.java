@@ -1,9 +1,6 @@
 package client;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 import client.websocket.WebSocketFacade;
 import exceptions.HttpResponseException;
 import model.AuthData;
@@ -36,6 +33,7 @@ public class ChessClient implements MessageObserver {
 
     private String currentUser = null;
     private AuthData currentAuthData;
+    private int currentGameID = -1;
     private ChessGame.TeamColor userColor = null;
     private ChessBoard gameBoard = new ChessBoard();
 
@@ -391,6 +389,8 @@ public class ChessClient implements MessageObserver {
             observing = false;
             userColor = playerTeamColor;
 
+            webSocket.joinPlayer(currentAuthData.authToken(), currentGameID, userColor);
+
             return String.format("Successfully joined game %d as the %s Player.", gameId, playerColor);
 
         } catch (HttpResponseException e) {
@@ -432,6 +432,8 @@ public class ChessClient implements MessageObserver {
             inGame = false;
             observing = true;
 
+            webSocket.joinObserver(currentAuthData.authToken(), currentGameID);
+
             return String.format("Observing game: %d", gameId);
 
         } catch (HttpResponseException e) {
@@ -466,6 +468,8 @@ public class ChessClient implements MessageObserver {
             this.observing = false;
             this.gameBoard = null; // Clean up local state
 
+            webSocket.leave(currentAuthData.authToken(), currentGameID);
+
             return "Left the game.";
         } catch (Exception e) {
             return String.format("Error leaving game: %s", e.getMessage());
@@ -492,10 +496,12 @@ public class ChessClient implements MessageObserver {
             }
         }
 
+        ChessMove move = new ChessMove(startPos, endPos, new ChessPiece(userColor, inputs[2]).getPieceType());
 
         //TODO: make me work
 
         try {
+            webSocket.makeMove(currentAuthData.authToken(), currentGameID, move);
             return "Move sent.";
         } catch (Exception e) {
             return String.format("Error making move: %s", e.getMessage());
@@ -516,7 +522,7 @@ public class ChessClient implements MessageObserver {
         }
 
         try {
-            //TODO: make me work
+            webSocket.resign(currentAuthData.authToken(), currentGameID);
             return "Resigned.";
         } catch (Exception e) {
             return String.format("Error resigning: %s", e.getMessage());
