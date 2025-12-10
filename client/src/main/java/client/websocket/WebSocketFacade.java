@@ -1,58 +1,136 @@
 package client.websocket;
 
+import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
-import jakarta.websocket.ContainerProvider;
-import jakarta.websocket.Endpoint;
-import jakarta.websocket.EndpointConfig;
-import jakarta.websocket.MessageHandler;
-import jakarta.websocket.Session;
-import jakarta.websocket.WebSocketContainer;
+import jakarta.websocket.*;
+import server.websocket.MessageObserver;
+import websocket.commands.*;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.Scanner;
 
-public class WebSocketFacade extends Endpoint {
-    public Session session;
+@ClientEndpoint
+public class WebSocketFacade {
 
-    public static void main(String[] args) throws Exception {
-        WebSocketFacade client = new WebSocketFacade("ws://localhost:8080/ws");
+    private Session session;
+    private MessageObserver observer;
+    private Gson gson;
 
-        Scanner scanner = new Scanner(System.in);
+    public WebSocketFacade(String url, MessageObserver observer) throws DeploymentException, IOException {
+        this.observer = observer;
+        this.gson = new Gson();
 
-        System.out.println("Enter a message you want to echo:");
-        while (true) {
-            client.send(scanner.nextLine());
+        URI uri = URI.create(url);
+        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+
+        this.session = container.connectToServer(this, uri);
+    }
+
+    @OnMessage
+    public void onMessage(String message) {
+        try {
+            // Deserialize the JSON string into a ServerMessage object
+            ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
+
+            // Pass the message to observer
+            observer.notify(serverMessage);
+
+        } catch (Exception e) {
+            System.err.println("Failed to handle message: " + e.getMessage());
         }
     }
 
-    public WebSocketFacade(String webSocketUri) throws Exception {
-        URI uri = new URI(webSocketUri);
-        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-        session = container.connectToServer(this, uri);
+//    @OnOpen
+//    public void onOpen(Session session) {
+//         System.out.println("Connected to WebSocket server");
+//    }
 
-        this.session.addMessageHandler(new MessageHandler.Whole<String>() {
-            public void onMessage(String message) {
-//                ServerMessage notification = new Gson().fromJson(message, ServerMessage.class);
-//                ResponseHandler.notify(notification);
-                //TODO: Make this actualy process the various kinds of messages and handle those properly
+//    @OnError
+//    public void onError(Session session, Throwable throwable) {
+//        System.err.println("WebSocket error: " + throwable.getMessage());
+//    }
 
-                System.out.println(message);
-            }
-        });
-    }
 
-    public void send(String message) throws IOException {
-        session.getBasicRemote().sendText(message);
-    }
-
-    public void ping(String message) throws IOException {
-        session.getBasicRemote().sendText(message);
+    private void sendCommand(UserGameCommand command) throws IOException {
+        if (session != null && session.isOpen()) {
+            String json = gson.toJson(command);
+            session.getBasicRemote().sendText(json);
+        } else {
+            throw new IOException("Connection is closed");
+        }
     }
 
 
-    // This method must be overridden, but we don't have to do anything with it
-    public void onOpen(Session session, EndpointConfig endpointConfig) {
+    public void joinPlayer(String authToken, int gameID, ChessGame.TeamColor playerColor) throws IOException {
+        JoinGameCommand command = new JoinGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID, playerColor.toString());
+        sendCommand(command);
+    }
+
+    public void joinObserver(String authToken, int gameID) throws IOException {
+        JoinGameCommand command = new JoinGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID, "OBSERVER");
+        sendCommand(command);
+    }
+
+    public void makeMove(String authToken, int gameID, ChessMove move) throws IOException {
+        MakeMoveCommand command = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, move);
+        sendCommand(command);
+    }
+
+    public void leave(String authToken, int gameID) throws IOException {
+        LeaveGameCommand command = new LeaveGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
+        sendCommand(command);
+    }
+
+    public void resign(String authToken, int gameID) throws IOException {
+        ReseignGameCommand command = new ReseignGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
+        sendCommand(command);
     }
 }
+
+//
+//public class WebSocketFacade extends Endpoint {
+//    public Session session;
+//
+//    public static void main(String[] args) throws Exception {
+//        WebSocketFacade client = new WebSocketFacade("ws://localhost:8080/ws");
+//
+//        Scanner scanner = new Scanner(System.in);
+//
+//        System.out.println("Enter a message you want to echo:");
+//        while (true) {
+//            client.send(scanner.nextLine());
+//        }
+//    }
+//
+//    public WebSocketFacade(String webSocketUri) throws Exception {
+//        URI uri = new URI(webSocketUri);
+//        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+//        session = container.connectToServer(this, uri);
+//
+//        this.session.addMessageHandler(new MessageHandler.Whole<String>() {
+//            public void onMessage(String message) {
+/// /                ServerMessage notification = new Gson().fromJson(message, ServerMessage.class);
+/// /                ResponseHandler.notify(notification);
+//                //TODO: Make this actualy process the various kinds of messages and handle those properly
+//
+//                System.out.println(message);
+//            }
+//        });
+//    }
+//
+//    public void send(String message) throws IOException {
+//        session.getBasicRemote().sendText(message);
+//    }
+//
+//    public void ping(String message) throws IOException {
+//        session.getBasicRemote().sendText(message);
+//    }
+//
+//
+//    // This method must be overridden, but we don't have to do anything with it
+//    public void onOpen(Session session, EndpointConfig endpointConfig) {
+//    }
+//}
