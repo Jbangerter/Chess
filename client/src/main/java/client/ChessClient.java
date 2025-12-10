@@ -11,7 +11,7 @@ import model.UserData;
 import model.gameservicerecords.CreateGameInput;
 import model.gameservicerecords.JoinGameInput;
 import model.gameservicerecords.ShortenedGameData;
-import server.websocket.MessageObserver;
+import client.websocket.MessageObserver;
 import serverfacade.ServerFacade;
 import websocket.messages.ServerMessage;
 

@@ -4,13 +4,11 @@ import chess.ChessGame;
 import chess.ChessMove;
 import com.google.gson.Gson;
 import jakarta.websocket.*;
-import server.websocket.MessageObserver;
 import websocket.commands.*;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Scanner;
 
 @ClientEndpoint
 public class WebSocketFacade {
