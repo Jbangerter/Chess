@@ -1,4 +1,4 @@
-package client.clientfunctions;
+package client.clientutils;
 
 import chess.ChessBoard;
 import chess.ChessGame;
@@ -133,7 +133,6 @@ public class ClientDisplay {
         board[r2][c2] = temp;
 
     }
-
 
 
     private final String[] preLogginHelp = {

@@ -1,7 +1,7 @@
 package client;
 
 import chess.*;
-import client.clientfunctions.ClientDisplay;
+import client.clientutils.ClientDisplay;
 import client.websocket.WebSocketFacade;
 import exceptions.HttpResponseException;
 import model.AuthData;
@@ -122,7 +122,7 @@ public class ChessClient implements MessageObserver {
             default -> "Invalid Command, try one of these:\n" + help();
         };
     }
-    
+
     public String login(String... inputs) {
         if (inputs.length != 2) {
             return "Error: Expected exactly two arguments: <username> <password>";
