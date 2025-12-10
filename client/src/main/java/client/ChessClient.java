@@ -11,7 +11,9 @@ import model.UserData;
 import model.gameservicerecords.CreateGameInput;
 import model.gameservicerecords.JoinGameInput;
 import model.gameservicerecords.ShortenedGameData;
+import server.websocket.MessageObserver;
 import serverfacade.ServerFacade;
+import websocket.messages.ServerMessage;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +23,7 @@ import java.util.stream.Collectors;
 
 import static chess.EscapeSequences.*;
 
-public class ChessClient {
+public class ChessClient implements MessageObserver {
     private final ServerFacade server;
     private final WebSocketFacade webSocket;
 
@@ -647,5 +649,17 @@ public class ChessClient {
         board[r1][c1] = board[r2][c2];
         board[r2][c2] = temp;
 
+    }
+
+    @Override
+    public void notify(ServerMessage message) {
+        switch (message.getServerMessageType()) {
+            case LOAD_GAME:
+                break;
+            case ERROR:
+                break;
+            case NOTIFICATION:
+                break;
+        }
     }
 }
