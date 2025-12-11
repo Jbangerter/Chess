@@ -330,6 +330,8 @@ public class ChessClient implements MessageObserver {
 
             webSocket.joinPlayer(currentAuthData.authToken(), currentGameID, userColor);
 
+            display.setPrintHeader(false);
+
             return String.format("Successfully joined game %d as the %s Player.", gameId, playerColor);
 
         } catch (HttpResponseException e) {
@@ -372,8 +374,10 @@ public class ChessClient implements MessageObserver {
             gameBoard = gameState.getBoard();
             inGame = false;
             observing = true;
+            currentGameID = gameId;
 
             webSocket.joinObserver(currentAuthData.authToken(), currentGameID);
+            display.setPrintHeader(false);
 
             return String.format("Observing game: %d", gameId);
 
@@ -382,12 +386,16 @@ public class ChessClient implements MessageObserver {
             inGame = false;
             userColor = null;
             observing = false;
+
+            currentGameID = -1;
             return String.format("Failed to observe game: %s", e.getStatusMessage());
         } catch (Exception e) {
             gameBoard = new ChessBoard();
             inGame = false;
             userColor = null;
             observing = false;
+
+            currentGameID = -1;
             return String.format("An unexpected error occurred: %s", e.getMessage());
         }
     }
@@ -442,6 +450,7 @@ public class ChessClient implements MessageObserver {
 
         try {
             webSocket.makeMove(currentAuthData.authToken(), currentGameID, move);
+            display.setPrintHeader(false);
             return "Move sent.";
         } catch (Exception e) {
             return String.format("Error making move: %s", e.getMessage());
@@ -481,7 +490,7 @@ public class ChessClient implements MessageObserver {
         game.setBoard(gameBoard);
         display.validMoves = game.validMoves(display.stringToPos(inputs[0]));
         display.setPrintBoard(true);
-        return "Highlighting moves...";
+        return "";
     }
 
     private String clearScreen() {
@@ -505,7 +514,6 @@ public class ChessClient implements MessageObserver {
                     websocket.messages.LoadGameMessage loadGame = gson.fromJson(message, websocket.messages.LoadGameMessage.class);
                     this.gameBoard = loadGame.getGame().getBoard();
                     display.setPrintBoard(true);
-                    System.out.println(display.screenFormater(currentUser, userColor, gameBoard, loggedIn, inGame, observing, "Board updated by server."));
                     break;
 
                 case ERROR:

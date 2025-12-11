@@ -28,8 +28,9 @@ public class ClientDisplay {
     private ChessGame.TeamColor userColor;
     private ChessBoard gameBoard;
     private ChessBoard oldGameBoard;
-    private Boolean printBoard = false;
 
+    private boolean printBoard = false;
+    private boolean printHeader = true;
 
     public ChessPosition stringToPos(String stringPos) {
         if (stringPos == null || stringPos.length() != 2) {
@@ -81,14 +82,19 @@ public class ClientDisplay {
             outputIndicator = "[" + SET_TEXT_COLOR_RED + "LOGGED_OUT" + RESET_TEXT_COLOR + "] >>> ";
         }
 
+        String output = "";
 
         if (printBoard) {
             printBoard = false;
-            return board + contentsCheckedForNull + outputIndicator;
-        } else {
-            return contentsCheckedForNull + outputIndicator;
+            output += board;
         }
+        output += contentsCheckedForNull;
+        if (printHeader) {
+            output += outputIndicator;
+        }
+        printHeader = true;
 
+        return output;
 
     }
 
@@ -111,8 +117,9 @@ public class ClientDisplay {
             }
         }
 
-        String[] columnLabels = {"   ", " a ", " b ", " c ", " d ", " e ", " f ", " g ", " h ", "   "};
-        String[] rowLabels = {"   ", " 8 ", " 7 ", " 6 ", " 5 ", " 4 ", " 3 ", " 2 ", " 1 ", "   "};
+        String[] columnLabels = {"   ", " h ", " g ", " f ", " e ", " d ", " c ", " b ", " a ", "   "};
+        ;
+        String[] rowLabels = {"   ", " 1 ", " 2 ", " 3 ", " 4 ", " 5 ", " 6 ", " 7 ", " 8 ", "   "};
 
         for (int row = 0; row < 10; row++) {
             for (int col = 0; col < 10; col++) {
@@ -121,13 +128,13 @@ public class ClientDisplay {
                 } else if (col == 0 || col == 9) {
                     stringBoard[row][col] = boardEdgeColor + rowLabels[row] + RESET_BG_COLOR;
                 } else if ((row + col) % 2 == 1) {
-                    if (highlightPositions.contains(new ChessPosition(9 - row, col))) {
+                    if (highlightPositions.contains(new ChessPosition(row, col))) {
                         stringBoard[row][col] = boardHighlightBlackSquare + boardArray[row - 1][col - 1] + RESET_BG_COLOR;
                     } else {
                         stringBoard[row][col] = boardBlackSquare + boardArray[row - 1][col - 1] + RESET_BG_COLOR;
                     }
                 } else {
-                    if (highlightPositions.contains(new ChessPosition(9 - row, col))) {
+                    if (highlightPositions.contains(new ChessPosition(row, col))) {
                         stringBoard[row][col] = boardHighlightWhiteSquare + boardArray[row - 1][col - 1] + RESET_BG_COLOR;
                     } else {
                         stringBoard[row][col] = boardWhiteSquare + boardArray[row - 1][col - 1] + RESET_BG_COLOR;
@@ -139,7 +146,7 @@ public class ClientDisplay {
 
         validMoves.clear();
 
-        if (userColor == ChessGame.TeamColor.BLACK) {
+        if (userColor != ChessGame.TeamColor.BLACK) {
             flipBoard(stringBoard);
         }
 
@@ -233,6 +240,14 @@ public class ClientDisplay {
 
     public void setPrintBoard(Boolean printBoard) {
         this.printBoard = printBoard;
+    }
+
+    public boolean isPrintHeader() {
+        return printHeader;
+    }
+
+    public void setPrintHeader(boolean printHeader) {
+        this.printHeader = printHeader;
     }
 }
 
